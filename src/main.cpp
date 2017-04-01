@@ -5,6 +5,6 @@ int main() {
 
 	Graph<uint64> graph;
 	loadNodes(graph);
-
+	loadEdges(graph);
 	return 0;
 }
