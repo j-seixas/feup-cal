@@ -35,6 +35,7 @@ class Vertex {
 public:
 
 	Vertex(T in);
+	Vertex(const Vertex<T> &v);
 	Vertex(T in, double latRad, double longRad);
 	friend class Graph<T>;
 
@@ -42,9 +43,10 @@ public:
 	void addEdgeID(Vertex<T> *dest, const T &id);
 	bool removeEdgeTo(Vertex<T> *d);
 
-	T getInfo() const { return ID; }
+	T getID() const { return ID; }
 	double getLatitude() const { return latitudeRadians; }
 	double getLongitude() const { return longitudeRadians; }
+	vector<Edge<T>>& getAdjacent() { return adjacent; }
 	void setInfo(T ID);
 
 	int getDist() const;
@@ -88,6 +90,9 @@ Vertex<T>::Vertex(T in, double latRad, double longRad) : ID(in), latitudeRadians
 }
 
 template <class T>
+Vertex<T>::Vertex(const Vertex<T> &v) : Vertex(v.ID, v.latitudeRadians, v.longitudeRadians) { }
+
+template <class T>
 void Vertex<T>::addEdge(Vertex<T> *dest, double w) {
 	Edge<T> edgeD(dest,w);
 	adjacent.push_back(edgeD);
@@ -129,6 +134,12 @@ class Edge {
 public:
 	Edge(Vertex<T> *d, double w);
 	Edge(Vertex<T> *d, T id, double w);
+	void setName(string s) { streetName = s; }
+	void setTwoWays(bool b) { isTwoWays = b; }
+	T getID() const { return ID; }
+	string getName() const { return streetName; }
+	bool getTwoWays() const { return isTwoWays; }
+	double getWeight() const { return weight; }
 	friend class Graph<T>;
 	friend class Vertex<T>;
 };
@@ -213,7 +224,7 @@ bool Graph<T>::addVertex(Vertex<T> &v) {
 	typename vector<Vertex<T>*>::iterator it = vertexSet.begin();
 	typename vector<Vertex<T>*>::iterator ite = vertexSet.end();
 	for (; it != ite; it++)
-		if ((*it)->ID == v.getInfo()) return false;
+		if ((*it)->ID == v.getID()) return false;
 	Vertex<T> *v1 = new Vertex<T>(v);
 	vertexSet.push_back(v1);
 	return true;

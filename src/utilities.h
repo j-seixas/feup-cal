@@ -1,7 +1,6 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
-#include "utilities.h"
 #include "graph.h"
 #include <fstream>
 #include <sstream>
@@ -51,6 +50,39 @@ void loadEdges(Graph<T> &graph) {
 				>> node1ID >> delimiter
 				>> node2ID;
 			graph.addEdgeID(node1ID, node2ID, edgeID);
+		}
+		file.close();
+	}
+}
+
+template<class T>
+void loadStreets(Graph<T> &graph) {
+	//Format: edgeID;streetName;isTwoWays;
+	string line;
+	ifstream file;
+	file.open("StreetTest.txt");
+	if (file.is_open()) {
+		while (getline(file, line)) {
+			T edgeID;
+			string streetName, isTwoWaysStr;
+			bool isTwoWays;
+			char delimiter;
+			istringstream iss(line);
+			iss >> edgeID >> delimiter;
+			getline(iss, streetName, delimiter);
+			getline(iss, isTwoWaysStr);
+			isTwoWays = (isTwoWaysStr == "True");				
+			//TODO Change to a better algorithm
+			//Something like graph.setStreets(edgeID, streeName, isTwoWays)
+			Edge<T> *edge = nullptr;
+			for (uint64 i = 0; i < graph.getVertexSet().size(); i++) {
+				for (uint64 j = 0; j < graph.getVertexSet()[i]->getAdjacent().size(); j++) {
+					if (graph.getVertexSet()[i]->getAdjacent()[j].getID() == edgeID) {
+						graph.getVertexSet()[i]->getAdjacent()[j].setName(streetName);
+						graph.getVertexSet()[i]->getAdjacent()[j].setTwoWays(isTwoWays);
+					}
+				}
+			}
 		}
 		file.close();
 	}
