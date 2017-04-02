@@ -1,5 +1,5 @@
-#include "utilities.h"
-#include "graph.h"
+#include "../headers/utilities.h"
+#include "../headers/graph.h"
 
 #include <iostream>
 
@@ -20,6 +20,6 @@ int main() {
 		cout << endl;
 	}
 
-
+	graph.showGraph();
 	return 0;
 }

@@ -1,6 +1,7 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
+#include "../graph_viewer/graphviewer.h"
 #include <vector>
 #include <queue>
 #include <list>
@@ -36,7 +37,6 @@ class Vertex {
 	int indegree;
 	int dist;
 public:
-
 	Vertex(T in);
 	Vertex(const Vertex<T> &v);
 	Vertex(T in, double latRad, double longRad);
@@ -188,8 +188,24 @@ public:
 	void unweightedShortestPath(const T &v);
 	bool isDAG();
 
+	void showGraph() const;
+
 };
 
+template <class T>
+void Graph<T>::showGraph() const{
+	int ID = 0;
+	GraphViewer *gv = new GraphViewer(600, 600, true);
+	gv->createWindow(600, 600);
+	gv->defineVertexColor("blue");
+	gv->defineEdgeColor("black");
+	for (Vertex<T> * it : this->vertexSet)
+		gv->addNode(it->getID());
+	for (Vertex<T> *v_it : this->vertexSet)
+		for (Edge<T> e_it : v_it->getAdjacent() )
+			gv->addEdge(ID++, v_it->getID() , (e_it.dest)->getID(), (e_it.isTwoWays) ? EdgeType::DIRECTED : EdgeType::UNDIRECTED);
+	gv->rearrange();
+}
 
 template <class T>
 int Graph<T>::getNumVertex() const {
@@ -323,8 +339,6 @@ bool Graph<T>::removeEdge(const T &sourc, const T &dest) {
 
 	return vS->removeEdgeTo(vD);
 }
-
-
 
 
 template <class T>
