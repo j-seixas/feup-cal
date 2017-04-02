@@ -29,7 +29,8 @@ void loadNodes(Graph<T> &graph) {
 				>> longitudeDegrees >> delimiter
 				>> longitudeRadians >> delimiter
 				>> latitudeRadians;
-			graph.addVertex(Vertex<T>(nodeID, latitudeRadians, longitudeRadians));
+			//this is a temporary variable must use new
+			graph.addVertex( *(new Vertex<T>(nodeID, latitudeRadians, longitudeRadians)) );
 		}
 		file.close();
 	}
@@ -74,7 +75,6 @@ void loadStreets(Graph<T> &graph) {
 			isTwoWays = (isTwoWaysStr == "True");				
 			//TODO Change to a better algorithm
 			//Something like graph.setStreets(edgeID, streeName, isTwoWays)
-			Edge<T> *edge = nullptr;
 			for (uint64 i = 0; i < graph.getVertexSet().size(); i++) {
 				for (uint64 j = 0; j < graph.getVertexSet()[i]->getAdjacent().size(); j++) {
 					if (graph.getVertexSet()[i]->getAdjacent()[j].getID() == edgeID) {

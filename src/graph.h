@@ -4,7 +4,9 @@
 #include <vector>
 #include <queue>
 #include <list>
-#include <limits>
+#include <climits>
+#include <string>
+#include <iostream>
 #include <cmath>
 using namespace std;
 
@@ -22,7 +24,8 @@ class Vertex {
 	*	Vertex information
 	*/
 	T ID;
-	double longitudeRadians, latitudeRadians;
+	double latitudeRadians;
+	double longitudeRadians;
 	vector<Edge<T>> adjacent;
 
 	/*!
@@ -126,11 +129,12 @@ int Vertex<T>::getIndegree() const {
 
 template <class T>
 class Edge {
+	Vertex<T> * dest;
+	double weight;
 	T ID;
 	string streetName;
 	bool isTwoWays;
-	Vertex<T> * dest;
-	double weight;
+	
 public:
 	Edge(Vertex<T> *d, double w);
 	Edge(Vertex<T> *d, T id, double w);
