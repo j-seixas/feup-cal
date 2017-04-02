@@ -16,7 +16,11 @@ void loadNodes(Graph<T> &graph) {
 	//Format: nodeID;latitudeDegrees;longitudeDegrees;longitudeRadians;latitudeRadians
 	string line;
 	ifstream file;
-	file.open("NodeTest.txt");
+	file.open("../rsc/NodeTest.txt");
+	if (!file.is_open()){
+		cout << "Failed to open Node txt file!\n";
+		exit(1);
+	}
 	if (file.is_open()) {
 		while (getline(file, line)) {
 			T nodeID;
@@ -41,7 +45,11 @@ void loadEdges(Graph<T> &graph) {
 	//Format: edgeID;node1ID;node2ID;
 	string line;
 	ifstream file;
-	file.open("EdgeTest.txt");
+	file.open("../rsc/EdgeTest.txt");
+	if (!file.is_open()){
+		cout << "Failed to open Edges txt file!\n";
+		exit(1);
+	}
 	if (file.is_open()) {
 		while (getline(file, line)) {
 			T edgeID, node1ID, node2ID;
@@ -61,7 +69,11 @@ void loadStreets(Graph<T> &graph) {
 	//Format: edgeID;streetName;isTwoWays;
 	string line;
 	ifstream file;
-	file.open("StreetTest.txt");
+	file.open("../rsc/StreetTest.txt");
+	if (!file.is_open()){
+		cout << "Failed to open Streets txt file!\n";
+		exit(1);
+	}
 	if (file.is_open()) {
 		while (getline(file, line)) {
 			T edgeID;
