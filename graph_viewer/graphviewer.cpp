@@ -20,7 +20,7 @@ void GraphViewer::initialize(int width, int height, bool dynamic, int port_n) {
   this->width = width;
   this->height = height;
   this->isDynamic = dynamic;
-  string command = "java -jar GraphViewerController.jar";
+  string command = "java -jar graph_viewer/GraphViewerController.jar";
   std::stringstream ss;
   ss << port_n;
   string port_string = ss.str();
@@ -76,7 +76,6 @@ void GraphViewer::initialize(int width, int height, bool dynamic, int port_n) {
   string str(buff);
   con->sendMsg(str);
 #endif
-
 }
 
 bool GraphViewer::createWindow(int width, int height) {

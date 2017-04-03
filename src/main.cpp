@@ -1,9 +1,13 @@
 #include "../headers/utilities.h"
 #include "../headers/graph.h"
-
+#include <Windows.h>
 #include <iostream>
 
 int main() {
+
+	char dir[256];
+	GetCurrentDirectory(256, dir);
+	cout << dir << endl;
 
 	Graph<uint64> graph;
 	loadNodes(graph);

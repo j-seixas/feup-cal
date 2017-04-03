@@ -195,16 +195,19 @@ public:
 template <class T>
 void Graph<T>::showGraph() const{
 	int ID = 0;
-	GraphViewer *gv = new GraphViewer(600, 600, true);
-	gv->createWindow(600, 600);
+	GraphViewer *gv = new GraphViewer(1000, 800, true);
+	gv->createWindow(1000, 800);
 	gv->defineVertexColor("blue");
 	gv->defineEdgeColor("black");
 	for (Vertex<T> * it : this->vertexSet)
 		gv->addNode(it->getID());
 	for (Vertex<T> *v_it : this->vertexSet)
-		for (Edge<T> e_it : v_it->getAdjacent() )
-			gv->addEdge(ID++, v_it->getID() , (e_it.dest)->getID(), (e_it.isTwoWays) ? EdgeType::DIRECTED : EdgeType::UNDIRECTED);
+		for (Edge<T> e_it : v_it->getAdjacent() ){
+			gv->addEdge(ID, v_it->getID() , (e_it.dest)->getID(), (e_it.getTwoWays()) ? EdgeType::UNDIRECTED : EdgeType::DIRECTED);
+			gv->setEdgeLabel(ID++, e_it.getName());
+		}
 	gv->rearrange();
+	system("pause");
 }
 
 template <class T>
