@@ -144,6 +144,7 @@ public:
 	string getName() const { return streetName; }
 	bool getTwoWays() const { return isTwoWays; }
 	double getWeight() const { return weight; }
+	Vertex<T>* getDest() { return dest; }
 	friend class Graph<T>;
 	friend class Vertex<T>;
 };
@@ -203,8 +204,9 @@ void Graph<T>::showGraph() const{
 		gv->addNode(it->getID());
 	for (Vertex<T> *v_it : this->vertexSet)
 		for (Edge<T> e_it : v_it->getAdjacent() ){
-			gv->addEdge(ID, v_it->getID() , (e_it.dest)->getID(), (e_it.getTwoWays()) ? EdgeType::UNDIRECTED : EdgeType::DIRECTED);
-			gv->setEdgeLabel(ID++, e_it.getName());
+			gv->addEdge(ID, v_it->getID() , (e_it.dest)->getID(), EdgeType::DIRECTED);
+			gv->setEdgeLabel(ID, e_it.getName());
+			gv->setEdgeWeight(ID++, e_it.getWeight());
 		}
 	gv->rearrange();
 	system("pause");

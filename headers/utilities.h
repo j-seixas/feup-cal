@@ -9,6 +9,7 @@
 
 using namespace std;
 
+typedef long long int int64;
 typedef unsigned long long int uint64;
 
 template<class T>
@@ -77,13 +78,19 @@ void loadStreets(Graph<T> &graph) {
 		getline(iss, streetName, delimiter);
 		getline(iss, isTwoWaysStr);
 		isTwoWays = (isTwoWaysStr == "True");
-		//TODO Change to a better algorithm
-		//Something like graph.setStreets(edgeID, streeName, isTwoWays)
 		for (uint64 i = 0; i < graph.getVertexSet().size(); i++) {
-			for (uint64 j = 0;	j < graph.getVertexSet()[i]->getAdjacent().size(); j++) {
-				if (graph.getVertexSet()[i]->getAdjacent()[j].getID() == edgeID) {
-					graph.getVertexSet()[i]->getAdjacent()[j].setName(streetName);
-					graph.getVertexSet()[i]->getAdjacent()[j].setTwoWays(isTwoWays);
+			Vertex<T> *vertex =  graph.getVertexSet()[i];
+			for (uint64 j = 0;	j < vertex->getAdjacent().size(); j++) {
+				Edge<T> *edge = &vertex->getAdjacent()[j];
+				if (edge->getID() == edgeID) {
+					edge->setName(streetName);
+					edge->setTwoWays(isTwoWays);
+					if(isTwoWays){
+						//If it's two ways, create another edge which is the opposite of the original and so is its ID.
+						graph.addEdgeID(edge->getDest()->getID(),
+									vertex->getID(),
+									-1 * edge->getID());
+					}
 				}
 			}
 		}
