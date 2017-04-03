@@ -26,13 +26,13 @@ default:proj
 
 #GRAPHVIEWER RULE
 $(GRAPH_OBJS): $(GRAPH_DIR)/*.cpp $(GRAPH_DEPS)
-	$(CC) -c -o $@ $(patsubst obj%,graph_viewer%,$(patsubst %.o,%.cpp,$@)) $(CFLAGS)
+	@$(CC) -c -o $@ $(patsubst obj%,graph_viewer%,$(patsubst %.o,%.cpp,$@)) $(CFLAGS)
 #PROJECT RULE
 $(PROJ_OBJS): ./src/*.cpp $(PROJ_DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+	@$(CC) -c -o $@ $< $(CFLAGS)
 
 proj: $(OBJS)
-	g++ -o $@ $^ $(CFLAGS)
+	@g++ -o $@ $^ $(CFLAGS)
 
 .PHONY: clean
 
