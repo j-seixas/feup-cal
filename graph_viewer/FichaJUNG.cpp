@@ -1,5 +1,5 @@
 #include <cstdio>
-#include "../headers/graphviewer.h"
+#include "graphviewer.h"
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -222,12 +222,4 @@ void exercicio3()
 		inFile.close();
 
 	gv->rearrange();
-}
-
-int main() {
-	exercicio1();
-	//exercicio2();
-	//exercicio3();
-	getchar();
-	return 0;
 }

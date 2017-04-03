@@ -76,7 +76,6 @@ void GraphViewer::initialize(int width, int height, bool dynamic, int port_n) {
   string str(buff);
   con->sendMsg(str);
 #endif
-
 }
 
 bool GraphViewer::createWindow(int width, int height) {
