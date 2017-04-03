@@ -32,8 +32,7 @@ void loadNodes(Graph<T> &graph) {
 				>> longitudeDegrees >> delimiter >> longitudeRadians
 				>> delimiter >> latitudeRadians;
 		//this is a temporary variable must use new
-		graph.addVertex(
-				*(new Vertex<T>(nodeID, latitudeRadians, longitudeRadians)));
+		graph.addVertex(*(new Vertex<T>(nodeID, latitudeRadians, longitudeRadians)));
 	}
 	file.close();
 }
