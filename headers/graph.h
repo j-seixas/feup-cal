@@ -209,6 +209,8 @@ public:
 	vector<T> getfloydWarshallPath(const T &origin, const T &dest);
 	void getfloydWarshallPathAux(int index1, int index2, vector<T> & res);
 
+	void Astar(Vertex<T> *sourc , Vertex<T> *dest);
+
 	void showGraph() const;
 
 };
@@ -733,6 +735,37 @@ int Graph<T>::edgeCost(int vOrigIndex, int vDestIndex){
 	}
 
 	return INT_INFINITY;
+}
+
+template<class T>
+void Graph<T>::Astar(Vertex<T> *sourc , Vertex<T> *dest){
+	for(unsigned int i = 0; i < vertexSet.size(); i++) {
+		vertexSet[i]->path = NULL;
+		vertexSet[i]->dist = INT_INFINITY;
+	}
+	sourc->dist = 0;
+	list<Vertex<T> *> open_list , closed_list;
+	open_list.push_front(sourc);
+	while ( !open_list.isEmpty() ){
+		make_heap( open_list.begin() , open_list.end() , vertex_greater_than<T>() );
+		Vertex<T> *curr = open_list.pop();
+		for ( Edge<T> edge : curr->adjacent){
+			Vertex<T> *adj = edge.dest;
+			if (*adj == dest)
+				return;
+			adj->dist += curr->dirst + edge.weight + calculateDistance(adj,dest);
+
+			for( Vertex<T> *temp : open_list )
+				if ( (*temp == *adj) && (temp->dist < adj->dist) )
+					continue;
+			for( Vertex<T> *temp : closed_list )
+				if ( (*temp == *adj) && (temp->dist < adj->dist) )
+					continue;
+			open_list.push_back(adj);
+			adj->path = curr;
+		}
+		closed_list.push_back(curr);
+	}
 }
 
 void printSquareArray(int ** arr, unsigned int size){
