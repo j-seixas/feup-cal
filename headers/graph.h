@@ -212,14 +212,14 @@ public:
 
 	void Astar(Vertex<T> *sourc , Vertex<T> *dest);
 
-	void showGraph() const;
+	GraphViewer* showGraph() const;
 
 	map<long long int,long long int> big_to_small = *(new map<long long int,long long int>());
 	map<string,string> basic_to_street_name = *(new map<string,string>()); //(A -> Rua J , B -> Rua A)
 };
 
 template <class T>
-void Graph<T>::showGraph() const{
+GraphViewer* Graph<T>::showGraph() const{
 	int ID = 0;
 	GraphViewer *gv = new GraphViewer(1000, 800, true);
 	gv->createWindow(1000, 800);
@@ -234,7 +234,7 @@ void Graph<T>::showGraph() const{
 			gv->setEdgeWeight(ID++, e_it.getWeight()*1000); //to show in meters
 		}
 	gv->rearrange();
-	system("pause");
+	return gv;
 }
 
 template <class T>
