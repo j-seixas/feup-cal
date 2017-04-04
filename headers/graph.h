@@ -5,6 +5,7 @@
 #include <vector>
 #include <queue>
 #include <list>
+#include <map>
 #include <climits>
 #include <string>
 #include <iostream>
@@ -213,6 +214,8 @@ public:
 
 	void showGraph() const;
 
+	map<long long int,long long int> big_to_small = *(new map<long long int,long long int>());
+	map<string,string> basic_to_street_name = *(new map<string,string>()); //(A -> Rua J , B -> Rua A)
 };
 
 template <class T>
@@ -228,7 +231,7 @@ void Graph<T>::showGraph() const{
 		for (Edge<T> e_it : v_it->getAdjacent() ){
 			gv->addEdge(ID, v_it->getID() , (e_it.dest)->getID(), EdgeType::DIRECTED);
 			gv->setEdgeLabel(ID, e_it.getName());
-			gv->setEdgeWeight(ID++, e_it.getWeight());
+			gv->setEdgeWeight(ID++, e_it.getWeight()*1000); //to show in meters
 		}
 	gv->rearrange();
 	system("pause");
@@ -671,10 +674,10 @@ void Graph<T>::bellmanFordShortestPath(const T &s) {
 
 	while( !q.empty() ) {
 		v = q.front(); q.pop();
-		for(unsigned int i = 0; i < v->adj.size(); i++) {
-			Vertex<T>* w = v->adj[i].dest;
-			if(v->dist + v->adj[i].weight < w->dist) {
-				w->dist = v->dist + v->adj[i].weight;
+		for(unsigned int i = 0; i < v->adjacent.size(); i++) {
+			Vertex<T>* w = v->adjacent[i].dest;
+			if(v->dist + v->adjacent[i].weight < w->dist) {
+				w->dist = v->dist + v->adjacent[i].weight;
 				w->path = v;
 				q.push(w);
 			}
@@ -705,11 +708,11 @@ void Graph<T>::dijkstraShortestPath(const T &s) {
 		pop_heap(pq.begin(), pq.end());
 		pq.pop_back();
 
-		for(unsigned int i = 0; i < v->adj.size(); i++) {
-			Vertex<T>* w = v->adj[i].dest;
+		for(unsigned int i = 0; i < v->adjacent.size(); i++) {
+			Vertex<T>* w = v->adjacent[i].dest;
 
-			if(v->dist + v->adj[i].weight < w->dist ) {
-				w->dist = v->dist + v->adj[i].weight;
+			if(v->dist + v->adjacent[i].weight < w->dist ) {
+				w->dist = v->dist + v->adjacent[i].weight;
 				w->path = v;
 
 				//se já estiver na lista, apenas a actualiza
@@ -729,9 +732,9 @@ int Graph<T>::edgeCost(int vOrigIndex, int vDestIndex){
 	if(vertexSet[vOrigIndex] == vertexSet[vDestIndex])
 		return 0;
 
-	for(unsigned int i = 0; i < vertexSet[vOrigIndex]->adj.size(); i++){
-		if(vertexSet[vOrigIndex]->adj[i].dest == vertexSet[vDestIndex])
-			return vertexSet[vOrigIndex]->adj[i].weight;
+	for(unsigned int i = 0; i < vertexSet[vOrigIndex]->adjacent.size(); i++){
+		if(vertexSet[vOrigIndex]->adjacent[i].dest == vertexSet[vDestIndex])
+			return vertexSet[vOrigIndex]->adjacent[i].weight;
 	}
 
 	return INT_INFINITY;
@@ -744,25 +747,31 @@ void Graph<T>::Astar(Vertex<T> *sourc , Vertex<T> *dest){
 		vertexSet[i]->dist = INT_INFINITY;
 	}
 	sourc->dist = 0;
-	list<Vertex<T> *> open_list , closed_list;
-	open_list.push_front(sourc);
-	while ( !open_list.isEmpty() ){
-		make_heap( open_list.begin() , open_list.end() , vertex_greater_than<T>() );
-		Vertex<T> *curr = open_list.pop();
+	list<Vertex<T> *> closed_list;
+	vector<Vertex<T> *> open_list;
+	open_list.push_back(sourc);
+	while ( !open_list.empty() ){
+		make_heap( open_list.begin() , open_list.end() , [&] (Vertex<T> *v1 , Vertex<T> *v2) {
+			return v1->getID() < v2->getID();
+		} );
+		Vertex<T> *curr = open_list.front();  open_list.pop_back();
+		cout << "Processing v=" << curr->getID() << endl;
 		for ( Edge<T> edge : curr->adjacent){
-			Vertex<T> *adj = edge.dest;
-			if (*adj == dest)
+			Vertex<T> *adjacent = edge.dest;
+			if (adjacent->getID() == dest->getID())
 				return;
-			adj->dist += curr->dirst + edge.weight + calculateDistance(adj,dest);
-
+			cout << "Adj (" << adjacent->getID() << ") " << adjacent->dist;
+			adjacent->dist += curr->dist + edge.weight + calculateDistance(adjacent,dest);
+			cout << " ,after " << adjacent->dist << endl;
+			//TODO can be optimized to just one cycle (with more branches)
 			for( Vertex<T> *temp : open_list )
-				if ( (*temp == *adj) && (temp->dist < adj->dist) )
+				if ( (temp->getID() == adjacent->getID()) && (temp->dist < adjacent->dist) )
 					continue;
 			for( Vertex<T> *temp : closed_list )
-				if ( (*temp == *adj) && (temp->dist < adj->dist) )
+				if ( (temp->getID() == adjacent->getID()) && (temp->dist < adjacent->dist) )
 					continue;
-			open_list.push_back(adj);
-			adj->path = curr;
+			open_list.push_back(adjacent);
+			adjacent->path = curr;
 		}
 		closed_list.push_back(curr);
 	}

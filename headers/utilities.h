@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <map>
 #include <cmath>
 
 using namespace std;
@@ -12,12 +13,15 @@ using namespace std;
 typedef long long int int64;
 typedef unsigned long long int uint64;
 
+string nextStreetName();
+
 template<class T>
 void loadNodes(Graph<T> &graph) {
+	int64 i = 1;
 	//Format: nodeID;latitudeDegrees;longitudeDegrees;longitudeRadians;latitudeRadians
 	string line;
 	ifstream file;
-	file.open("rsc/NodeTest.txt");
+	file.open("rsc/Nodes.txt");
 	if (!file.is_open()){
 		cout << "Failed to open Node txt file!\n";
 		exit(1);
@@ -32,7 +36,8 @@ void loadNodes(Graph<T> &graph) {
 				>> longitudeDegrees >> delimiter >> longitudeRadians
 				>> delimiter >> latitudeRadians;
 		//this is a temporary variable must use new
-		graph.addVertex(*(new Vertex<T>(nodeID, latitudeRadians, longitudeRadians)));
+		graph.addVertex(*(new Vertex<T>(i, latitudeRadians, longitudeRadians)));
+		graph.big_to_small.insert(pair<int64,int64>(nodeID,i++) );
 	}
 	file.close();
 }
@@ -42,7 +47,7 @@ void loadEdges(Graph<T> &graph) {
 	//Format: edgeID;node1ID;node2ID;
 	string line;
 	ifstream file;
-	file.open("rsc/EdgeTest.txt");
+	file.open("rsc/Edges.txt");
 	if (!file.is_open()) {
 		cout << "Failed to open Edges txt file!\n";
 		exit(1);
@@ -52,7 +57,7 @@ void loadEdges(Graph<T> &graph) {
 		char delimiter;
 		istringstream iss(line);
 		iss >> edgeID >> delimiter >> node1ID >> delimiter >> node2ID;
-		graph.addEdgeID(node1ID, node2ID, edgeID);
+		graph.addEdgeID(graph.big_to_small.at(node1ID), graph.big_to_small.at(node2ID), edgeID);
 	}
 	file.close();
 }
@@ -62,7 +67,7 @@ void loadStreets(Graph<T> &graph) {
 	//Format: edgeID;streetName;isTwoWays;
 	string line;
 	ifstream file;
-	file.open("rsc/StreetTest.txt");
+	file.open("rsc/Streets.txt");
 	if (!file.is_open()) {
 		cout << "Failed to open Streets txt file!\n";
 		exit(1);
@@ -82,13 +87,13 @@ void loadStreets(Graph<T> &graph) {
 			for (uint64 j = 0;	j < vertex->getAdjacent().size(); j++) {
 				Edge<T> *edge = &vertex->getAdjacent()[j];
 				if (edge->getID() == edgeID) {
-					edge->setName(streetName);
+					string name = nextStreetName();
+					graph.basic_to_street_name.insert(pair<string,string>(name,streetName));
+					edge->setName(name);
 					edge->setTwoWays(isTwoWays);
 					if(isTwoWays){
 						//If it's two ways, create another edge which is the opposite of the original and so is its ID.
-						graph.addEdgeID(edge->getDest()->getID(),
-									vertex->getID(),
-									-1 * edge->getID());
+						graph.addEdgeID(edge->getDest()->getID(),vertex->getID(),-1 * edge->getID());
 					}
 				}
 			}

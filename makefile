@@ -9,7 +9,7 @@ ODIR= ./obj
 _PROJ_DEPS=graph.h utilities.h
 PROJ_DEPS=$(patsubst %,$(IDIR)/%,$(_PROJ_DEPS))
 
-_PROJ_OBJ=main.o
+_PROJ_OBJ=main.o utilities.o
 PROJ_OBJS=$(patsubst %,$(ODIR)/%,$(_PROJ_OBJ))
 
 #GRAPHVIEWER DEPEPNDENCIES
@@ -26,13 +26,13 @@ default:proj
 
 #GRAPHVIEWER RULE
 $(GRAPH_OBJS): $(GRAPH_DIR)/*.cpp $(GRAPH_DEPS)
-	@$(CC) -c -o $@ $(patsubst obj%,graph_viewer%,$(patsubst %.o,%.cpp,$@)) $(CFLAGS)
+	$(CC) -c -o $@ $(patsubst obj%,graph_viewer%,$(patsubst %.o,%.cpp,$@)) -Wall
 #PROJECT RULE
 $(PROJ_OBJS): ./src/*.cpp $(PROJ_DEPS)
-	@$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -c -o $@ $(patsubst obj%,src%,$(patsubst %.o,%.cpp,$@)) $(CFLAGS)
 
 proj: $(OBJS)
-	@g++ -o $@ $^ $(CFLAGS)
+	g++ -o $@ $^ $(CFLAGS)
 
 .PHONY: clean
 
