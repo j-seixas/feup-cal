@@ -211,12 +211,12 @@ public:
 
 	void Astar(Vertex<T> *sourc , Vertex<T> *dest);
 
-	void showGraph() const;
+	GraphViewer* showGraph() const;
 
 };
 
 template <class T>
-void Graph<T>::showGraph() const{
+GraphViewer* Graph<T>::showGraph() const{
 	int ID = 0;
 	GraphViewer *gv = new GraphViewer(1000, 800, true);
 	gv->createWindow(1000, 800);
@@ -231,7 +231,7 @@ void Graph<T>::showGraph() const{
 			gv->setEdgeWeight(ID++, e_it.getWeight());
 		}
 	gv->rearrange();
-	system("pause");
+	return gv;
 }
 
 template <class T>

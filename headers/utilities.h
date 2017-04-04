@@ -9,6 +9,7 @@
 
 using namespace std;
 
+typedef unsigned int uint16;
 typedef long long int int64;
 typedef unsigned long long int uint64;
 
@@ -112,6 +113,34 @@ double calculateDistance(Vertex<T> *v1, Vertex<T> *v2) {
 	double b = 2 * atan2(sqrt(a), sqrt(1 - a));
 	double c = earthRadius * b;
 	return c;
+}
+
+
+uint16 getInput() {
+	string line;
+	uint16 input;
+
+	while (true) {
+		cin.clear();
+		cout << "Option: ";
+		getline(cin, line);
+		if (cin.eof())
+			exit(1);
+		istringstream iss(line);
+		iss >> input;
+		if (!iss.fail() && line.length() > 0)
+			return input;
+	}
+}
+
+string getStreetName(){
+	string streetName;
+	cin.clear();
+	cout << "Name of the street: ";
+	getline(cin, streetName);
+	if (cin.eof())
+		exit(1);
+	return streetName;
 }
 
 #endif // UTILITIES_H
