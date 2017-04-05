@@ -16,6 +16,7 @@ typedef unsigned long long int uint64;
 
 template <class T> class Edge;
 template <class T> class Graph;
+uint64 nextInteger();
 
 const int NOT_VISITED   = 0;
 const int BEING_VISITED = 1;
@@ -33,6 +34,7 @@ class Vertex {
 	*	Vertex information
 	*/
 	T ID;
+	uint64 id_mask;
 	double latitudeRadians;
 	double longitudeRadians;
 	vector<Edge<T>> adjacent;
@@ -48,23 +50,27 @@ public:
 	Vertex(T in);
 	Vertex(const Vertex<T> &v);
 	Vertex(T in, double latRad, double longRad);
-	friend class Graph<T>;
 	void addEdge(Vertex<T> *dest, double w);
+	void addEdge(Edge<T> *edge);
 	void addEdgeID(Vertex<T> *dest, const T &id);
 	bool removeEdgeTo(Vertex<T> *d);
 
 	T getID() const { return ID; }
+	uint64 getMaskID() const { return id_mask; }
 	double getLatitude() const { return latitudeRadians; }
 	double getLongitude() const { return longitudeRadians; }
 	vector<Edge<T>>& getAdjacent() { return adjacent; }
-	void setInfo(T ID);
+	int getDist() const { return dist; }
+	int getIndegree() const { return indegree; }
 
-	int getDist() const;
-	int getIndegree() const;
+	void setInfo(T id) { ID = id; }
+	void setMaskID(uint64 mask) { id_mask = mask; }
 
 	bool operator<(const Vertex<T> vertex);
 
-	Vertex* path;//used for backtracing
+	Vertex* path;
+
+	friend class Graph<T>;
 };
 
 
@@ -92,11 +98,6 @@ bool Vertex<T>::removeEdgeTo(Vertex<T> *d) {
 }
 
 template <class T>
-Vertex<T>::Vertex(T in): ID(in), visited(false), processing(false), indegree(0), dist(0) {
-	path = NULL;
-}
-
-template <class T>
 Vertex<T>::Vertex(T in, double latRad, double longRad) : ID(in), latitudeRadians(latRad), longitudeRadians(longRad), visited(false), processing(false), indegree(0), dist(0) {
 	path = NULL;
 }
@@ -118,22 +119,9 @@ void Vertex<T>::addEdgeID(Vertex<T> *dest, const T &id) {
 }
 
 template <class T>
-int Vertex<T>::getDist() const {
-	return this->dist;
+void Vertex<T>::addEdge(Edge<T> *edge) {
+	adjacent.push_back(*edge);
 }
-
-
-template <class T>
-void Vertex<T>::setInfo(T ID) {
-	this->ID = ID;
-}
-
-template <class T>
-int Vertex<T>::getIndegree() const {
-	return this->indegree;
-}
-
-
 
 /* ================================================================================================
  * Class Edge
@@ -146,29 +134,40 @@ class Edge {
 	T ID;
 	string streetName;
 	bool isTwoWays;
+	bool is_cut;
 	const int max_number_cars;
 	int number_cars;
+	string name_mask;
 public:
 	Edge(Vertex<T> *d, T id, double w);
-	void cutRoad();
+
+	void cutRoad() { is_cut = true; }
+	bool isFull() const;
+	bool isCut() const { return is_cut; }
+
 	void setName(string s) { streetName = s; }
+	void setNameMask(string s) { name_mask = s;}
 	void setTwoWays(bool b) { isTwoWays = b; }
+
 	T getID() const { return ID; }
 	string getName() const { return streetName; }
 	bool getTwoWays() const { return isTwoWays; }
 	double getWeight() const { return weight; }
 	Vertex<T>* getDest() { return dest; }
+	string getNameMask() const { return name_mask; }
+
 	friend class Graph<T>;
 	friend class Vertex<T>;
 };
 
 template <class T>
 Edge<T>::Edge(Vertex<T> *d, T id, double w) :
-	dest(d), weight(w), ID(id), max_number_cars(rand() % 25 + 25), number_cars(0), isTwoWays(true) {}
+	dest(d), weight(w), ID(id), max_number_cars(rand() % 25 + 25), number_cars(0), isTwoWays(true), is_cut(false) {}
+
 
 template <class T>
-void Edge<T>::cutRoad(){
-	number_cars = max_number_cars;
+bool Edge<T>::isFull() const {
+	return number_cars == max_number_cars;
 }
 
 /* ================================================================================================
@@ -187,9 +186,10 @@ class Graph {
 
 public:
 	bool addVertex(const T &in);
-	bool addVertex(Vertex<T> &v);
+	bool addVertex(Vertex<T> *v);
 	bool addEdge(const T &sourc, const T &dest, double w);
 	bool addEdgeID(const T &sourc, const T &dest, const T &id);
+	bool addEdge(Edge<T>* edge, Vertex<T>* from);
 	bool removeVertex(const T &in);
 	bool removeEdge(const T &sourc, const T &dest);
 	vector<T> dfs() const;
@@ -216,48 +216,40 @@ public:
 
 	void Astar(Vertex<T> *sourc , Vertex<T> *dest);
 	bool cutStreet(string streetName);
-	GraphViewer* showGraph() const;
-
-	map<long long int,long long int> big_to_small = *(new map<long long int,long long int>());
-	map<string,string> basic_to_street_name = *(new map<string,string>()); //(A -> Rua J , B -> Rua A)
+	void updateGraphViewer(GraphViewer *gv) const;
 };
 
 template <class T>
 bool Graph<T>::cutStreet(string streetName){
 	//TODO Improve this search algorithm
-	//TODO Oco, isto vai dar merda quando houver ruas com o mesmo nome e isso acontece bué pq o openstreetmaps é uma merda e da-te colhoes de ruas sem nome.
-	//TODO Secalhar, é melhor o map ser string -> int (ID da edge)
-	auto actualName = basic_to_street_name.find(streetName);
-	if(actualName != basic_to_street_name.end()){
 	for(uint64 i = 0; i < this->vertexSet.size(); i++){
 		for(uint64 j = 0; j < this->vertexSet[i]->adjacent.size(); j++){
-			if(this->vertexSet[i]->adjacent[j].getName() == actualName->second){
+			if(this->vertexSet[i]->adjacent[j].getNameMask() == streetName){
 				this->vertexSet[i]->adjacent[j].cutRoad();
 				return true;
 			}
 		}
 	}
-	}
 	return false;
 }
 
 template <class T>
-GraphViewer* Graph<T>::showGraph() const{
+void Graph<T>::updateGraphViewer(GraphViewer *gv) const{
 	int ID = 0;
-	GraphViewer *gv = new GraphViewer(1000, 800, true);
-	gv->createWindow(1000, 800);
-	gv->defineVertexColor("blue");
-	gv->defineEdgeColor("black");
 	for (Vertex<T> * it : this->vertexSet)
-		gv->addNode(it->getID());
+		gv->addNode(it->getMaskID());
 	for (Vertex<T> *v_it : this->vertexSet)
 		for (Edge<T> e_it : v_it->getAdjacent() ){
-			gv->addEdge(ID, v_it->getID() , (e_it.dest)->getID(), EdgeType::DIRECTED);
-			gv->setEdgeLabel(ID, e_it.getName());
-			gv->setEdgeWeight(ID++, e_it.getWeight()*1000); //to show in meters
+			gv->addEdge(ID, v_it->getMaskID() , (e_it.dest)->getMaskID(), EdgeType::DIRECTED);
+			gv->setEdgeLabel(ID, e_it.getNameMask());
+			gv->setEdgeWeight(ID, e_it.getWeight()*1000); //to show in meters
+			if(e_it.isFull())
+				gv->setEdgeColor(ID, "yellow");
+			if(e_it.isCut())
+				gv->setEdgeColor(ID, "red");
+			ID++;
 		}
 	gv->rearrange();
-	return gv;
 }
 
 template <class T>
@@ -282,24 +274,11 @@ bool Graph<T>::isDAG() {
 }
 
 template <class T>
-bool Graph<T>::addVertex(const T &in) {
-	typename vector<Vertex<T>*>::iterator it= vertexSet.begin();
-	typename vector<Vertex<T>*>::iterator ite= vertexSet.end();
-	for (; it!=ite; it++) //checks if vertex already exists
-		if ((*it)->ID == in) return false;
-	Vertex<T> *v1 = new Vertex<T>(in);
-	vertexSet.push_back(v1);
-	return true;
-}
-
-template <class T>
-bool Graph<T>::addVertex(Vertex<T> &v) {
-	typename vector<Vertex<T>*>::iterator it = vertexSet.begin();
-	typename vector<Vertex<T>*>::iterator ite = vertexSet.end();
-	for (; it != ite; it++) //checks if vertex already exists
-		if ((*it)->ID == v.getID()) return false;
-	Vertex<T> *v1 = new Vertex<T>(v);
-	vertexSet.push_back(v1);
+bool Graph<T>::addVertex(Vertex<T> *v) {
+	if(getVertex(v->ID) != nullptr)
+		return false;
+	v->id_mask = nextInteger();
+	vertexSet.push_back(v);
 	return true;
 }
 
@@ -346,6 +325,13 @@ bool Graph<T>::addEdge(const T &sourc, const T &dest, double w) {
 	vD->indegree++;
 	vS->addEdge(vD,w);
 
+	return true;
+}
+
+template <class T>
+bool Graph<T>::addEdge(Edge<T>* edge, Vertex<T>* source) {
+	edge->dest->indegree++;
+	source->addEdge(edge);
 	return true;
 }
 
@@ -484,7 +470,7 @@ template <class T>
 Vertex<T>* Graph<T>::getVertex(const T &v) const {
 	for(unsigned int i = 0; i < vertexSet.size(); i++)
 		if (vertexSet[i]->ID == v) return vertexSet[i];
-	return NULL;
+	return nullptr;
 }
 
 template<class T>
@@ -800,28 +786,6 @@ void Graph<T>::Astar(Vertex<T> *sourc , Vertex<T> *dest){
 	}
 }
 
-void printSquareArray(int ** arr, unsigned int size){
-	for(unsigned int k = 0; k < size; k++){
-		if(k == 0){
-			cout <<  "   ";
-			for(unsigned int i = 0; i < size; i++)
-				cout <<  " " << i+1 << " ";
-			cout << endl;
-		}
-
-		for(unsigned int i = 0; i < size; i++){
-			if(i == 0)
-				cout <<  " " << k+1 << " ";
-
-			if(arr[k][i] == INT_INFINITY)
-				cout << " - ";
-			else
-				cout <<  " " << arr[k][i] << " ";
-		}
-
-		cout << endl;
-	}
-}
 
 /*
 template<class T>

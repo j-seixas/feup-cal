@@ -1,15 +1,26 @@
-#include "../headers/utilities.h"
 #include "../headers/ui.h"
-#include "../graph_viewer/graphviewer.h"
 #include <iostream>
 
-void run() {
-	Graph<int64> graph;
+void initGraph(Graph<int64> &graph){
 	loadNodes(graph);
 	loadEdges(graph);
 	loadStreets(graph);
-	GraphViewer *gv = graph.showGraph();
-	menu(graph);
+}
+
+void initGraphViewer(GraphViewer *gv){
+	gv->createWindow(1000, 800);
+	gv->defineVertexColor("white");
+	gv->defineEdgeColor("green");
+}
+
+void run() {
+	Graph<int64> graph;
+	initGraph(graph);
+	GraphViewer *gv = new GraphViewer(1000, 800, true);
+	initGraphViewer(gv);
+	do{
+		graph.updateGraphViewer(gv);
+	} while(menu(graph));
 	gv->closeWindow();
 	delete gv;
 
