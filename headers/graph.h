@@ -227,14 +227,16 @@ bool Graph<T>::cutStreet(string streetName){
 	//TODO Improve this search algorithm
 	//TODO Oco, isto vai dar merda quando houver ruas com o mesmo nome e isso acontece bué pq o openstreetmaps é uma merda e da-te colhoes de ruas sem nome.
 	//TODO Secalhar, é melhor o map ser string -> int (ID da edge)
-	string actualName = basic_to_street_name.at(streetName);
+	auto actualName = basic_to_street_name.find(streetName);
+	if(actualName != basic_to_street_name.end()){
 	for(uint64 i = 0; i < this->vertexSet.size(); i++){
 		for(uint64 j = 0; j < this->vertexSet[i]->adjacent.size(); j++){
-			if(this->vertexSet[i]->adjacent[j].getName() == actualName){
+			if(this->vertexSet[i]->adjacent[j].getName() == actualName->second){
 				this->vertexSet[i]->adjacent[j].cutRoad();
 				return true;
 			}
 		}
+	}
 	}
 	return false;
 }
