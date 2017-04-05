@@ -12,6 +12,8 @@
 #include <cmath>
 using namespace std;
 
+typedef unsigned long long int uint64;
+
 template <class T> class Edge;
 template <class T> class Graph;
 
@@ -144,10 +146,11 @@ class Edge {
 	T ID;
 	string streetName;
 	bool isTwoWays;
-	
+	const int max_number_cars;
+	int number_cars;
 public:
-	Edge(Vertex<T> *d, double w);
 	Edge(Vertex<T> *d, T id, double w);
+	void cutRoad();
 	void setName(string s) { streetName = s; }
 	void setTwoWays(bool b) { isTwoWays = b; }
 	T getID() const { return ID; }
@@ -160,12 +163,13 @@ public:
 };
 
 template <class T>
-Edge<T>::Edge(Vertex<T> *d, double w): dest(d), weight(w){}
+Edge<T>::Edge(Vertex<T> *d, T id, double w) :
+	dest(d), weight(w), ID(id), max_number_cars(rand() % 25 + 25), number_cars(0), isTwoWays(true) {}
 
 template <class T>
-Edge<T>::Edge(Vertex<T> *d, T id, double w) : dest(d), weight(w), ID(id) {}
-
-
+void Edge<T>::cutRoad(){
+	number_cars = max_number_cars;
+}
 
 /* ================================================================================================
  * Class Graph
@@ -211,12 +215,29 @@ public:
 	void getfloydWarshallPathAux(int index1, int index2, vector<T> & res);
 
 	void Astar(Vertex<T> *sourc , Vertex<T> *dest);
-
+	bool cutStreet(string streetName);
 	GraphViewer* showGraph() const;
 
 	map<long long int,long long int> big_to_small = *(new map<long long int,long long int>());
 	map<string,string> basic_to_street_name = *(new map<string,string>()); //(A -> Rua J , B -> Rua A)
 };
+
+template <class T>
+bool Graph<T>::cutStreet(string streetName){
+	//TODO Improve this search algorithm
+	//TODO Oco, isto vai dar merda quando houver ruas com o mesmo nome e isso acontece bué pq o openstreetmaps é uma merda e da-te colhoes de ruas sem nome.
+	//TODO Secalhar, é melhor o map ser string -> int (ID da edge)
+	string actualName = basic_to_street_name.at(streetName);
+	for(uint64 i = 0; i < this->vertexSet.size(); i++){
+		for(uint64 j = 0; j < this->vertexSet[i]->adjacent.size(); j++){
+			if(this->vertexSet[i]->adjacent[j].getName() == actualName){
+				this->vertexSet[i]->adjacent[j].cutRoad();
+				return true;
+			}
+		}
+	}
+	return false;
+}
 
 template <class T>
 GraphViewer* Graph<T>::showGraph() const{

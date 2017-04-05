@@ -19,7 +19,7 @@ void menu(Graph<T> graph){
 		}
 		else if(option == 1){
 			string streetName = getStreetName();
-			//graph.cutStreet(streetName);
+			graph.cutStreet(streetName);
 		}
 	}
 }
