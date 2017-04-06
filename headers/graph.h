@@ -162,7 +162,7 @@ public:
 
 template <class T>
 Edge<T>::Edge(Vertex<T> *d, T id, double w) :
-	dest(d), weight(w), ID(id), max_number_cars(rand() % 25 + 25), number_cars(0), isTwoWays(true), is_cut(false) {}
+	dest(d), weight(w), ID(id), max_number_cars(rand() % 25 + 25), number_cars(rand() % max_number_cars), isTwoWays(true), is_cut(false) {}
 
 
 template <class T>
@@ -241,7 +241,8 @@ void Graph<T>::updateGraphViewer(GraphViewer *gv) const{
 	for (Vertex<T> *v_it : this->vertexSet)
 		for (Edge<T> e_it : v_it->getAdjacent() ){
 			gv->addEdge(ID, v_it->getMaskID() , (e_it.dest)->getMaskID(), EdgeType::DIRECTED);
-			gv->setEdgeLabel(ID, e_it.getNameMask());
+			gv->setEdgeLabel(ID, e_it.getNameMask() + " (" + to_string(e_it.max_number_cars) + ")");
+			gv->setEdgeFlow(ID, e_it.number_cars);
 			gv->setEdgeWeight(ID, e_it.getWeight()*1000); //to show in meters
 			if(e_it.isFull())
 				gv->setEdgeColor(ID, "yellow");
