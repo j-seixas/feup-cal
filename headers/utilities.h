@@ -25,12 +25,22 @@ static double maxLatitude;
 static double minLongitude;
 static double maxLongitude;
 const int WIDTH = 1000;
-const int HEIGHT = 800;
+const int HEIGHT = 1000;
 
 template<class T>
 pair<int, int> calculatePosition(Vertex<T>* v) {
-	int x = (v->getLatitude() - minLatitute) * WIDTH / (maxLatitude - minLatitute);
-	int y = (v->getLongitude() - minLongitude) * HEIGHT / (maxLongitude - minLongitude);
+	int x;
+	if(v->getLongitude() > 0.0)
+		x = (v->getLongitude() - minLongitude) * WIDTH / (maxLongitude - minLongitude);
+	else
+		x = (minLongitude - v->getLongitude()) * WIDTH / (maxLongitude - minLongitude) + WIDTH;
+
+	int y;
+	if(v->getLatitude() > 0.0)
+		y = (v->getLatitude() - minLatitute) * HEIGHT / (maxLatitude - minLatitute);
+	else
+		y = (minLatitute - v->getLatitude()) * HEIGHT / (maxLatitude - minLatitute) + HEIGHT;
+
 	return pair<int,int>(x, y);
 }
 
@@ -58,7 +68,7 @@ void loadNodes(Graph<T> &graph) {
 	//Format: nodeID;latitudeDegrees;longitudeDegrees;longitudeRadians;latitudeRadians
 	string line;
 	ifstream file;
-	file.open("rsc/Nodes.txt");
+	file.open("rsc/Nodes2.txt");
 	if (!file.is_open()) {
 		cout << "Failed to open Node txt file!\n";
 		exit(1);
@@ -84,7 +94,7 @@ void loadEdges(Graph<T> &graph) {
 	//Format: edgeID;node1ID;node2ID;
 	string line;
 	ifstream file;
-	file.open("rsc/Edges.txt");
+	file.open("rsc/Edges2.txt");
 	if (!file.is_open()) {
 		cout << "Failed to open Edges txt file!\n";
 		exit(1);
@@ -108,7 +118,7 @@ void loadStreets(Graph<T> &graph) {
 	//Format: edgeID;streetName;isTwoWays;
 	string line;
 	ifstream file;
-	file.open("rsc/Streets.txt");
+	file.open("rsc/Streets2.txt");
 	if (!file.is_open()) {
 		cout << "Failed to open Streets txt file!\n";
 		exit(1);

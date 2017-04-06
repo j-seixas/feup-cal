@@ -1,0 +1,9 @@
+12542496;Avenida da República;False
+12542497;Avenida da República;False
+27426581;Rua do Doutor Afonso Cordeiro;False
+27426592;Rua Mouzinho de Albuquerque;False
+162102325;Rua de Dom João I;False
+172956463;Rua Mouzinho de Albuquerque;False
+287418686;Avenida da República;False
+287418687;Rua do Doutor Afonso Cordeiro;False
+287418688;Avenida da República;False
