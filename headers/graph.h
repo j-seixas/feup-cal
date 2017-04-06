@@ -132,11 +132,12 @@ class Edge {
 	Vertex<T> * dest;
 	double weight;
 	T ID;
+	const int max_number_cars;
+	int number_cars;
 	string streetName;
 	bool isTwoWays;
 	bool is_cut;
-	const int max_number_cars;
-	int number_cars;
+	
 	string name_mask;
 public:
 	Edge(Vertex<T> *d, T id, double w);

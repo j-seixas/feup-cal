@@ -21,6 +21,8 @@ bool menu(Graph<T> graph){
 			graph.cutStreet(streetName);
 			return true;
 		}
+
+		return false;
 }
 
 
