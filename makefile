@@ -6,7 +6,7 @@ CFLAGS= -I $(IDIR) -Wall
 ODIR= ./obj
 
 #PROJECT SPECIFIC DEPENDENCIES 
-_PROJ_DEPS=graph.h utilities.h
+_PROJ_DEPS=graph.h utilities.h ui.h
 PROJ_DEPS=$(patsubst %,$(IDIR)/%,$(_PROJ_DEPS))
 
 _PROJ_OBJ=main.o utilities.o
