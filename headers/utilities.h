@@ -15,10 +15,12 @@ typedef long long int int64;
 typedef unsigned long long int uint64;
 
 string nextStreetName();
+string getStreetName();
+uint16 getInput();
+void printSquareArray(int ** arr, unsigned int size);
 
 template<class T>
 void loadNodes(Graph<T> &graph) {
-	int64 i = 1;
 	//Format: nodeID;latitudeDegrees;longitudeDegrees;longitudeRadians;latitudeRadians
 	string line;
 	ifstream file;
@@ -36,9 +38,7 @@ void loadNodes(Graph<T> &graph) {
 		iss >> nodeID >> delimiter >> latitudeDegrees >> delimiter
 				>> longitudeDegrees >> delimiter >> longitudeRadians
 				>> delimiter >> latitudeRadians;
-		//this is a temporary variable must use new
-		graph.addVertex(*(new Vertex<T>(i, latitudeRadians, longitudeRadians)));
-		graph.big_to_small.insert(pair<int64,int64>(nodeID,i++) );
+		graph.addVertex(new Vertex<T>(nodeID, latitudeRadians, longitudeRadians));
 	}
 	file.close();
 }
@@ -54,11 +54,14 @@ void loadEdges(Graph<T> &graph) {
 		exit(1);
 	}
 	while (getline(file, line)) {
-		T edgeID, node1ID, node2ID;
+		T edgeID, srcID, dstID;
 		char delimiter;
 		istringstream iss(line);
-		iss >> edgeID >> delimiter >> node1ID >> delimiter >> node2ID;
-		graph.addEdgeID(graph.big_to_small.at(node1ID), graph.big_to_small.at(node2ID), edgeID);
+		iss >> edgeID >> delimiter >> srcID >> delimiter >> dstID;
+		Vertex<T>* src = graph.getVertex(srcID);
+		Vertex<T>* dst = graph.getVertex(dstID);
+		if(src != nullptr && dst != nullptr)
+			graph.addEdge(new Edge<T>(dst, edgeID, calculateDistance(src, dst)), src);
 	}
 	file.close();
 }
@@ -88,13 +91,15 @@ void loadStreets(Graph<T> &graph) {
 			for (uint64 j = 0;	j < vertex->getAdjacent().size(); j++) {
 				Edge<T> *edge = &vertex->getAdjacent()[j];
 				if (edge->getID() == edgeID) {
-					string name = nextStreetName();
-					graph.basic_to_street_name.insert(pair<string,string>(name,streetName));
-					edge->setName(name);
+					edge->setName(streetName);
+					edge->setNameMask(nextStreetName());
 					edge->setTwoWays(isTwoWays);
 					if(isTwoWays){
 						//If it's two ways, create another edge which is the opposite of the original and so is its ID.
-						graph.addEdgeID(edge->getDest()->getID(),vertex->getID(),-1 * edge->getID());
+						Edge<T>* oppositeEdge = new Edge<T>(vertex, -1 * edge->getID(), calculateDistance(vertex, edge->getDest()));
+						oppositeEdge->setName(streetName);
+						oppositeEdge->setNameMask(nextStreetName());
+						graph.addEdge(oppositeEdge, edge->getDest());
 					}
 				}
 			}
@@ -120,32 +125,5 @@ double calculateDistance(Vertex<T> *v1, Vertex<T> *v2) {
 	return c;
 }
 
-
-uint16 getInput() {
-	string line;
-	uint16 input;
-
-	while (true) {
-		cin.clear();
-		cout << "Option: ";
-		getline(cin, line);
-		if (cin.eof())
-			exit(1);
-		istringstream iss(line);
-		iss >> input;
-		if (!iss.fail() && line.length() > 0)
-			return input;
-	}
-}
-
-string getStreetName(){
-	string streetName;
-	cin.clear();
-	cout << "Name of the street: ";
-	getline(cin, streetName);
-	if (cin.eof())
-		exit(1);
-	return streetName;
-}
 
 #endif // UTILITIES_H
