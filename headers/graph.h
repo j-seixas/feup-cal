@@ -59,6 +59,7 @@ public:
 	bool removeEdgeTo(Vertex<T> *d);
 
 	T getID() const { return ID; }
+	uint64 getIDMask() {return this->id_mask;}
 	uint64 getMaskID() const { return id_mask; }
 	double getLatitude() const { return latitudeRadians; }
 	double getLongitude() const { return longitudeRadians; }
@@ -68,6 +69,8 @@ public:
 
 	void setInfo(T id) { ID = id; }
 	void setMaskID(uint64 mask) { id_mask = mask; }
+	list<Vertex<T> *> backtrace();
+
 
 	bool operator<(const Vertex<T> vertex);
 
@@ -124,6 +127,22 @@ void Vertex<T>::addEdgeID(Vertex<T> *dest, const T &id) {
 template <class T>
 void Vertex<T>::addEdge(Edge<T> *edge) {
 	adjacent.push_back(*edge);
+}
+
+template <class T>
+list<Vertex<T> *> Vertex<T>::backtrace(){
+	list<Vertex<T> *> temp;
+	Vertex<T> * curr = this->path;
+	temp.push_front(this);
+	if (this->path == NULL)
+		cout << "NULL" << endl;
+	while (curr != NULL){
+		cout << "	BACKTRACE ID = " << curr->getIDMask() << endl;
+		temp.push_front(curr);
+		curr = curr->path;
+	}
+
+	return temp;
 }
 
 /* ================================================================================================
@@ -202,7 +221,8 @@ public:
 	vector<Vertex<T> * > getVertexSet() const;
 	int getNumVertex() const;
 
-	Vertex<T>* getVertex(const T &v) const;
+	Vertex<T>* getVertexByID(const T &v) const;
+	Vertex<T>* getVertexByIDMask(const T &v) const;
 	void resetIndegrees();
 	vector<Vertex<T>*> getSources() const;
 	int getNumCycles();
@@ -282,7 +302,7 @@ bool Graph<T>::isDAG() {
 
 template <class T>
 bool Graph<T>::addVertex(Vertex<T> *v) {
-	if(getVertex(v->ID) != nullptr)
+	if(getVertexByID(v->ID) != nullptr)
 		return false;
 	v->id_mask = nextInteger();
 	vertexSet.push_back(v);
@@ -474,11 +494,19 @@ int Graph<T>::maxNewChildren(Vertex<T> *v, T &inf) const {
 
 
 template <class T>
-Vertex<T>* Graph<T>::getVertex(const T &v) const {
+Vertex<T>* Graph<T>::getVertexByID(const T &v) const {
 	for(unsigned int i = 0; i < vertexSet.size(); i++)
 		if (vertexSet[i]->ID == v) return vertexSet[i];
 	return nullptr;
 }
+
+template <class T>
+Vertex<T>* Graph<T>::getVertexByIDMask(const T &v) const {
+	for(unsigned int i = 0; i < vertexSet.size(); i++)
+		if (vertexSet[i]->id_mask == v) return vertexSet[i];
+	return nullptr;
+}
+
 
 template<class T>
 void Graph<T>::resetIndegrees() {
@@ -582,7 +610,7 @@ template<class T>
 vector<T> Graph<T>::getPath(const T &origin, const T &dest){
 
 	list<T> buffer;
-	Vertex<T>* v = getVertex(dest);
+	Vertex<T>* v = getVertexByID(dest);
 
 	//cout << v->info << " ";
 	buffer.push_front(v->ID);
@@ -610,7 +638,7 @@ void Graph<T>::unweightedShortestPath(const T &s) {
 		vertexSet[i]->dist = INT_INFINITY;
 	}
 
-	Vertex<T>* v = getVertex(s);
+	Vertex<T>* v = getVertexByID(s);
 	v->dist = 0;
 	queue< Vertex<T>* > q;
 	q.push(v);
@@ -635,7 +663,7 @@ void Graph<T>::bellmanFordShortestPath(const T &s) {
 		vertexSet[i]->dist = INT_INFINITY;
 	}
 
-	Vertex<T>* v = getVertex(s);
+	Vertex<T>* v = getVertexByID(s);
 	v->dist = 0;
 	queue< Vertex<T>* > q;
 	q.push(v);
@@ -661,7 +689,7 @@ void Graph<T>::dijkstraShortestPath(const T &s) {
 		vertexSet[i]->processing = false;
 	}
 
-	Vertex<T>* v = getVertex(s);
+	Vertex<T>* v = getVertexByID(s);
 	v->dist = 0;
 
 	vector< Vertex<T>* > pq;
@@ -723,14 +751,17 @@ void Graph<T>::Astar(Vertex<T> *sourc , Vertex<T> *dest){
 			return v1->getID() < v2->getID();
 		} );
 		Vertex<T> *curr = open_list.front();  open_list.pop_back();
-		cout << "Processing v=" << curr->getID() << endl;
+		cout << "Processing v=" << curr->getIDMask() << endl;
 		for ( Edge<T> edge : curr->adjacent){
 			Vertex<T> *adjacent = edge.dest;
-			if (adjacent->getID() == dest->getID())
+			if (adjacent->getID() == dest->getID()){
+				adjacent->path = curr;
 				return;
-			cout << "Adj (" << adjacent->getID() << ") " << adjacent->dist;
-			adjacent->dist += curr->dist + edge.weight + calculateDistance(adjacent,dest);
-			cout << " ,after " << adjacent->dist << endl;
+			}
+			//cout << "Adj (" << adjacent->getIDMask() << ") " << adjacent->dist << endl;
+			//cout << "Curr dist = " << curr->dist << ", edge w = " << edge.weight*1000 << " , heuristic = " << calculateDistance(adjacent,dest)*1000 << endl;
+			adjacent->dist = curr->dist + edge.weight*1000 + calculateDistance(adjacent,dest)*1000;
+			//cout << " ,after " << adjacent->dist << endl;
 			//TODO can be optimized to just one cycle (with more branches)
 			for( Vertex<T> *temp : open_list )
 				if ( (temp->getID() == adjacent->getID()) && (temp->dist < adjacent->dist) )
@@ -739,6 +770,7 @@ void Graph<T>::Astar(Vertex<T> *sourc , Vertex<T> *dest){
 				if ( (temp->getID() == adjacent->getID()) && (temp->dist < adjacent->dist) )
 					continue;
 			open_list.push_back(adjacent);
+			cout << "	PATH = " << curr->getIDMask() << endl;
 			adjacent->path = curr;
 		}
 		closed_list.push_back(curr);

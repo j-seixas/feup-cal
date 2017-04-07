@@ -68,7 +68,7 @@ void loadNodes(Graph<T> &graph) {
 	//Format: nodeID;latitudeDegrees;longitudeDegrees;longitudeRadians;latitudeRadians
 	string line;
 	ifstream file;
-	file.open("rsc/Nodes2.txt");
+	file.open("rsc/Nodes3.txt");
 	if (!file.is_open()) {
 		cout << "Failed to open Node txt file!\n";
 		exit(1);
@@ -94,7 +94,7 @@ void loadEdges(Graph<T> &graph) {
 	//Format: edgeID;node1ID;node2ID;
 	string line;
 	ifstream file;
-	file.open("rsc/Edges2.txt");
+	file.open("rsc/Edges3.txt");
 	if (!file.is_open()) {
 		cout << "Failed to open Edges txt file!\n";
 		exit(1);
@@ -104,8 +104,8 @@ void loadEdges(Graph<T> &graph) {
 		char delimiter;
 		istringstream iss(line);
 		iss >> edgeID >> delimiter >> srcID >> delimiter >> dstID;
-		Vertex<T>* src = graph.getVertex(srcID);
-		Vertex<T>* dst = graph.getVertex(dstID);
+		Vertex<T>* src = graph.getVertexByID(srcID);
+		Vertex<T>* dst = graph.getVertexByID(dstID);
 		if (src != nullptr && dst != nullptr)
 			graph.addEdge(new Edge<T>(dst, edgeID, calculateDistance(src, dst)),
 					src);
@@ -118,7 +118,7 @@ void loadStreets(Graph<T> &graph) {
 	//Format: edgeID;streetName;isTwoWays;
 	string line;
 	ifstream file;
-	file.open("rsc/Streets2.txt");
+	file.open("rsc/Streets3.txt");
 	if (!file.is_open()) {
 		cout << "Failed to open Streets txt file!\n";
 		exit(1);
