@@ -16,7 +16,10 @@ typedef unsigned long long int uint64;
 
 template <class T> class Edge;
 template <class T> class Graph;
+template <class T> class Vertex;
 uint64 nextInteger();
+template<class T>
+pair<int, int> calculatePosition(Vertex<T>* v);
 
 const int NOT_VISITED   = 0;
 const int BEING_VISITED = 1;
@@ -237,8 +240,10 @@ bool Graph<T>::cutStreet(string streetName){
 template <class T>
 void Graph<T>::updateGraphViewer(GraphViewer *gv) const{
 	int ID = 0;
-	for (Vertex<T> * it : this->vertexSet)
-		gv->addNode(it->getMaskID());
+	for (Vertex<T> * it : this->vertexSet){
+		pair<int, int> position = calculatePosition(it);
+		gv->addNode(it->getMaskID(), position.first, position.second);
+	}
 	for (Vertex<T> *v_it : this->vertexSet)
 		for (Edge<T> e_it : v_it->getAdjacent() ){
 			gv->addEdge(ID, v_it->getMaskID() , (e_it.dest)->getMaskID(), EdgeType::DIRECTED);

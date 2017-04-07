@@ -19,13 +19,57 @@ string getStreetName();
 uint16 getInput();
 void printSquareArray(int ** arr, unsigned int size);
 
+static bool init = false;
+static double minLatitute;
+static double maxLatitude;
+static double minLongitude;
+static double maxLongitude;
+const int WIDTH = 1000;
+const int HEIGHT = 1000;
+
+template<class T>
+pair<int, int> calculatePosition(Vertex<T>* v) {
+	int x;
+	if(v->getLongitude() > 0.0)
+		x = (v->getLongitude() - minLongitude) * WIDTH / (maxLongitude - minLongitude);
+	else
+		x = (minLongitude - v->getLongitude()) * WIDTH / (maxLongitude - minLongitude) + WIDTH;
+
+	int y;
+	if(v->getLatitude() > 0.0)
+		y = (v->getLatitude() - minLatitute) * HEIGHT / (maxLatitude - minLatitute);
+	else
+		y = (minLatitute - v->getLatitude()) * HEIGHT / (maxLatitude - minLatitute) + HEIGHT;
+
+	return pair<int,int>(x, y);
+}
+
+template<class T>
+void updateBounds(const Vertex<T> *v) {
+	if (init) {
+		if (v->getLatitude() < minLatitute)
+			minLatitute = v->getLatitude();
+		else if (v->getLatitude() > maxLatitude)
+			maxLatitude = v->getLatitude();
+		if (v->getLongitude() < minLongitude)
+			minLongitude = v->getLongitude();
+		else if (v->getLongitude() > maxLongitude)
+			maxLongitude = v->getLongitude();
+	} else {
+		minLatitute = v->getLatitude();
+		maxLatitude = v->getLatitude();
+		minLongitude = v->getLongitude();
+		maxLongitude = v->getLongitude();
+		init = true;
+	}
+}
 template<class T>
 void loadNodes(Graph<T> &graph) {
 	//Format: nodeID;latitudeDegrees;longitudeDegrees;longitudeRadians;latitudeRadians
 	string line;
 	ifstream file;
-	file.open("rsc/Nodes.txt");
-	if (!file.is_open()){
+	file.open("rsc/Nodes2.txt");
+	if (!file.is_open()) {
 		cout << "Failed to open Node txt file!\n";
 		exit(1);
 	}
@@ -38,7 +82,9 @@ void loadNodes(Graph<T> &graph) {
 		iss >> nodeID >> delimiter >> latitudeDegrees >> delimiter
 				>> longitudeDegrees >> delimiter >> longitudeRadians
 				>> delimiter >> latitudeRadians;
-		graph.addVertex(new Vertex<T>(nodeID, latitudeRadians, longitudeRadians));
+		Vertex<T> *v = new Vertex<T>(nodeID, latitudeRadians, longitudeRadians);
+		updateBounds(v);
+		graph.addVertex(v);
 	}
 	file.close();
 }
@@ -48,7 +94,7 @@ void loadEdges(Graph<T> &graph) {
 	//Format: edgeID;node1ID;node2ID;
 	string line;
 	ifstream file;
-	file.open("rsc/Edges.txt");
+	file.open("rsc/Edges2.txt");
 	if (!file.is_open()) {
 		cout << "Failed to open Edges txt file!\n";
 		exit(1);
@@ -60,8 +106,9 @@ void loadEdges(Graph<T> &graph) {
 		iss >> edgeID >> delimiter >> srcID >> delimiter >> dstID;
 		Vertex<T>* src = graph.getVertex(srcID);
 		Vertex<T>* dst = graph.getVertex(dstID);
-		if(src != nullptr && dst != nullptr)
-			graph.addEdge(new Edge<T>(dst, edgeID, calculateDistance(src, dst)), src);
+		if (src != nullptr && dst != nullptr)
+			graph.addEdge(new Edge<T>(dst, edgeID, calculateDistance(src, dst)),
+					src);
 	}
 	file.close();
 }
@@ -71,7 +118,7 @@ void loadStreets(Graph<T> &graph) {
 	//Format: edgeID;streetName;isTwoWays;
 	string line;
 	ifstream file;
-	file.open("rsc/Streets.txt");
+	file.open("rsc/Streets2.txt");
 	if (!file.is_open()) {
 		cout << "Failed to open Streets txt file!\n";
 		exit(1);
@@ -87,16 +134,18 @@ void loadStreets(Graph<T> &graph) {
 		getline(iss, isTwoWaysStr);
 		isTwoWays = (isTwoWaysStr == "True");
 		for (uint64 i = 0; i < graph.getVertexSet().size(); i++) {
-			Vertex<T> *vertex =  graph.getVertexSet()[i];
-			for (uint64 j = 0;	j < vertex->getAdjacent().size(); j++) {
+			Vertex<T> *vertex = graph.getVertexSet()[i];
+			for (uint64 j = 0; j < vertex->getAdjacent().size(); j++) {
 				Edge<T> *edge = &vertex->getAdjacent()[j];
 				if (edge->getID() == edgeID) {
 					edge->setName(streetName);
 					edge->setNameMask(nextStreetName());
 					edge->setTwoWays(isTwoWays);
-					if(isTwoWays){
+					if (isTwoWays) {
 						//If it's two ways, create another edge which is the opposite of the original and so is its ID.
-						Edge<T>* oppositeEdge = new Edge<T>(vertex, -1 * edge->getID(), calculateDistance(vertex, edge->getDest()));
+						Edge<T>* oppositeEdge = new Edge<T>(vertex,
+								-1 * edge->getID(),
+								calculateDistance(vertex, edge->getDest()));
 						oppositeEdge->setName(streetName);
 						oppositeEdge->setNameMask(nextStreetName());
 						graph.addEdge(oppositeEdge, edge->getDest());
@@ -124,6 +173,5 @@ double calculateDistance(Vertex<T> *v1, Vertex<T> *v2) {
 	double c = earthRadius * b;
 	return c;
 }
-
 
 #endif // UTILITIES_H
