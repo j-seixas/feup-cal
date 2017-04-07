@@ -1,0 +1,19 @@
+114301308;Rua Padre Arnaldo Rebelo;True
+138657275;Rua São Romão;True
+138657285;Travessa da Quinta Nova;True
+138657305;Rua da Cegonheira;True
+138657427;Rua Aldeia do Monte;True
+138657459;Rua Amadeu Ferreira Thedim;True
+138657594;Rua Rodrigo Pedro;True
+138657597;Rua Joaquim Francisco Seabra;True
+138657772;Rua dos Carvalhos;False
+138657878;Rua da Quinta Nova;False
+175942854;;False
+293434961;;False
+293434962;;False
+306738771;Rua de São Romão;False
+306738772;Travessa Santo Condestável;False
+308107173;Rua Joaquim da Silva Torres;False
+308107174;Rua dos Jacintos;True
+308788912;Rua Santo Condestável;True
+317924922;Rua dos Jacintos;True
