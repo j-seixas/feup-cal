@@ -9,10 +9,12 @@ using namespace std;
 
 template<class T>
 bool menu(Graph<T> graph){
-		cout << "Menu" << endl << endl
-			<< "  1. Cut road" << endl << endl
-			<< "  0. Exit" << endl << endl;
+	cout << "Menu" << endl
+		 << "  1. Cut road" << endl
+		 << "  2. Update" << endl
+		 << "  0. Exit" << endl;
 		uint16 option = getInput();
+		cout << endl;
 		if(option == 0){
 			return false;
 		}

@@ -62,6 +62,7 @@ string getStreetName(){
 	getline(cin, streetName);
 	if (cin.eof())
 		exit(1);
+	cout << endl;
 	return streetName;
 }
 
