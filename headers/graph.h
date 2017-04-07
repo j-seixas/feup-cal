@@ -58,7 +58,6 @@ public:
 	void addEdgeID(Vertex<T> *dest, const T &id);
 	bool removeEdgeTo(Vertex<T> *d);
 
-<<<<<<< HEAD
 	T getID() const { return ID; }
 	uint64 getIDMask() {return this->id_mask;}
 	uint64 getMaskID() const { return id_mask; }
@@ -71,37 +70,6 @@ public:
 	void setInfo(T id) { ID = id; }
 	void setMaskID(uint64 mask) { id_mask = mask; }
 	list<Vertex<T> *> backtrace();
-
-=======
-	T getID() const {
-		return ID;
-	}
-	uint64 getMaskID() const {
-		return id_mask;
-	}
-	double getLatitude() const {
-		return latitudeRadians;
-	}
-	double getLongitude() const {
-		return longitudeRadians;
-	}
-	vector<Edge<T>>& getAdjacent() {
-		return adjacent;
-	}
-	int getDist() const {
-		return dist;
-	}
-	int getIndegree() const {
-		return indegree;
-	}
-
-	void setInfo(T id) {
-		ID = id;
-	}
-	void setMaskID(uint64 mask) {
-		id_mask = mask;
-	}
->>>>>>> f3d5ca6c0e4b9480a8b80f3153833a7febdc7330
 
 	bool operator<(const Vertex<T> vertex);
 
@@ -389,11 +357,7 @@ bool Graph<T>::isDAG() {
 
 template<class T>
 bool Graph<T>::addVertex(Vertex<T> *v) {
-<<<<<<< HEAD
 	if(getVertexByID(v->ID) != nullptr)
-=======
-	if (getVertex(v->ID) != nullptr)
->>>>>>> f3d5ca6c0e4b9480a8b80f3153833a7febdc7330
 		return false;
 	v->id_mask = nextInteger();
 	vertexSet.push_back(v);
@@ -594,19 +558,11 @@ int Graph<T>::maxNewChildren(Vertex<T> *v, T &inf) const {
 	return maxChildren;
 }
 
-<<<<<<< HEAD
-
 template <class T>
 Vertex<T>* Graph<T>::getVertexByID(const T &v) const {
 	for(unsigned int i = 0; i < vertexSet.size(); i++)
-		if (vertexSet[i]->ID == v) return vertexSet[i];
-=======
-template<class T>
-Vertex<T>* Graph<T>::getVertex(const T &v) const {
-	for (unsigned int i = 0; i < vertexSet.size(); i++)
-		if (vertexSet[i]->ID == v)
+		if (vertexSet[i]->ID == v) 
 			return vertexSet[i];
->>>>>>> f3d5ca6c0e4b9480a8b80f3153833a7febdc7330
 	return nullptr;
 }
 
