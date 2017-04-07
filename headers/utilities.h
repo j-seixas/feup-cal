@@ -158,10 +158,10 @@ void loadStreets(Graph<T> &graph) {
 }
 
 /*!
- *	Calculates the distance between two points on earth (in km) using Haversine's formula
+ *	Calculates the distance between two points on earth (in m) using Haversine's formula
  */
 template<class T>
-double calculateDistance(Vertex<T> *v1, Vertex<T> *v2) {
+int calculateDistance(Vertex<T> *v1, Vertex<T> *v2) {
 	double earthRadius = 6371;
 	double deltaLatitude = v2->getLatitude() - v1->getLatitude();
 	double deltaLongitude = v2->getLongitude() - v1->getLongitude();
@@ -171,7 +171,7 @@ double calculateDistance(Vertex<T> *v1, Vertex<T> *v2) {
 					* sin(deltaLongitude / 2) * sin(deltaLongitude / 2);
 	double b = 2 * atan2(sqrt(a), sqrt(1 - a));
 	double c = earthRadius * b;
-	return c;
+	return c*1000;
 }
 
 #endif // UTILITIES_H
