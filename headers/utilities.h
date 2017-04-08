@@ -145,7 +145,7 @@ void loadStreets(Graph<T> &graph) {
 		for (Vertex<T> * vertex : graph.getVertexSet() ){
 			auto edge = vertex->getAdjacent().find(edgeID);
 			if( edge != vertex->getAdjacent().end() ){
-				Edge<T> *ed = &((*edge).second);
+				Edge<T> *ed = (*edge).second;
 				ed->setName(streetName);
 				ed->setNameMask( nextStreetName() );
 				ed->setTwoWays(isTwoWays);
