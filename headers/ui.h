@@ -9,7 +9,7 @@ using namespace std;
 
 
 template<class T>
-bool carsMovingMenu( Graph<T> &graph , Vertex<T> *sourc , GraphViewer *gv){
+void  carsMovingMenu( Graph<T> &graph , Vertex<T> *sourc , GraphViewer *gv){
 	cout << "Generating alternatives each second or character inserted \n";
 	for (Vertex<T> *dest : graph.getCarsDest() ){
 		cout << "Generating for " << sourc->getIDMask() << " -> " << dest->getIDMask() << " \n";
@@ -21,14 +21,14 @@ bool carsMovingMenu( Graph<T> &graph , Vertex<T> *sourc , GraphViewer *gv){
 		current = std::chrono::high_resolution_clock::now();
 		graph.Astar(sourc,dest);
 		cout << "A* took " << std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - current).count() << "s \n";
-		if (dest->path != NULL)
+		if (dest->path != NULL){
+			cout << "Updating Path \n";
 			graph.updatePath(dest);
+		}
 		else
 			cout << "No path found for " << sourc->getIDMask() << " -> " << dest->getIDMask() << "\n"; 
 		graph.updateGraphViewer(gv);
 	}
-
-	return true;
 }
 
 template<class T>
@@ -43,7 +43,7 @@ bool menu(Graph<T> &graph, GraphViewer *gv){
 			string streetName = getStreetName();
 			Vertex<T> * v = graph.cutStreet(streetName);
 			if ( v != NULL)
-				return carsMovingMenu(graph,v,gv);
+				carsMovingMenu(graph,v,gv);
 			graph.show_name = true;
 			return true;
 		}

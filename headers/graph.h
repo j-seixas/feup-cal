@@ -84,7 +84,6 @@ list<Vertex<T> *> Vertex<T>::backtrace(){
  */
 template<class T>
 class Edge {
-	//Vertex<T> * sourc;
 	Vertex<T> * dest;
 	unsigned int weight; //its in m
 	T ID;
@@ -198,10 +197,11 @@ template<class T>
 Vertex<T> * Graph<T>::cutStreet(string streetName) {
 	for (Vertex<T> * vertex : this->vertexSet) {
 		for(pair<long long int , Edge<T>* > p : vertex->adjacent){
-			if (p.second->getNameMask() == streetName) {
+			Edge<T> * edge = p.second;
+			if (edge->getNameMask() == streetName) {
 				this->resetAlgorithmVars();
-				this->generateCarPaths(p.second->dest);
-				p.second->cutRoad();
+				this->generateCarPaths(edge->dest);
+				edge->cutRoad();
 				this->show_name = false;
 				return vertex;
 			}
@@ -225,8 +225,11 @@ void Graph<T>::updateGraphViewer(GraphViewer *gv) const {
 			gv->setEdgeThickness(ID, (e_it.second->curr_number_cars/e_it.second->max_number_cars)*10 + 1);
 			if (e_it.second->isFull())
 				gv->setEdgeColor(ID, "yellow");
-			else if (e_it.second->isCut())
+			else if (e_it.second->isCut()){
+				gv->setVertexColor(v_it->getIDMask(), "red" );
 				gv->setEdgeColor(ID, "red");
+				gv->setEdgeThickness(ID,15);
+			}
 			ID++;
 		}
 	}
@@ -242,17 +245,8 @@ void Graph<T>::updatePath( Vertex<T> *v){
 	Vertex<T> *src = v->path;
 	Vertex<T> *dest = v;
 	while( src != NULL){
-		cout << "Updating edge " << src->id_mask << "->" << dest->id_mask << "\n";
-		cout << "ADJ SIZE = " << src->adjacent.size() << endl;
-		auto it = src->adjacent.find(dest->id_mask);
-		cout << "FOUND\n";
-		if ( it != src->adjacent.end()){
-			cout << "INC\n";
-			(*it).second->curr_number_cars++;
-		}
-		else
-			cout << "Unknown vertex! " << dest->id_mask << "\n";
-		cout << "inc cars\n";
+		Edge<T> * edge = src->adjacent[dest->id_mask];
+		edge->curr_number_cars++;
 		dest = src;
 		src = src->path;
 	}
@@ -260,8 +254,6 @@ void Graph<T>::updatePath( Vertex<T> *v){
 
 template<class T>
 bool Graph<T>::addVertex(Vertex<T> *v) {
-	//if(getVertexByID(v->ID) != nullptr)
-	//	return false;
 	v->id_mask = this->counter++;
 	this->vertexSet.insert(v);
 	return true;
@@ -289,34 +281,27 @@ void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest) {
 		v->path = NULL;
 		v->dist = INT_INFINITY;
 	}
-	const unsigned int MAX_EXPLORE_DEPTH = this->vertexSet.size() * 0.75;
+	const unsigned int MAX_EXPLORE_NODES = this->vertexSet.size() * 0.75;
 	sourc->dist = 0;
 	list<Vertex<T> > closed_list;
 	vector<Vertex<T> > open_list;
-	open_list.reserve(MAX_EXPLORE_DEPTH + 1);
 	open_list.push_back(*sourc);
 	while ( !open_list.empty() ){
-		if(closed_list.size() >= MAX_EXPLORE_DEPTH ){ //if no path was found
+		if(closed_list.size() >= MAX_EXPLORE_NODES ){ //if no path was found
 			dest->path = NULL;
 			return;
 		}
-		make_heap( open_list.begin() , open_list.end() , [] (Vertex<T> v1 , Vertex<T> v2) {
-			return v1.getDist() > v2.getDist(); //to make heap minimum to max
-		} );
-		Vertex<T> curr = open_list.front();  open_list.erase(open_list.begin());
-		//cout << "VERTEX = " << curr.getIDMask() << endl;
+		make_heap( open_list.begin() , open_list.end() , [] (Vertex<T> v1 , Vertex<T> v2) { return v1.getDist() > v2.getDist(); } );
+		Vertex<T> curr = open_list.front();  
+		open_list.erase(open_list.begin());
+		
 		for ( pair<long long int,Edge<T>*> p : curr.adjacent){
 			Edge<T> *edge = p.second;
 			Vertex<T> *adjacent = edge->dest;
-			//cout << "Processing, " << curr.getIDMask() << " -> " <<  edge->dest->getIDMask() << endl;
-			if (edge->curr_number_cars == edge->max_number_cars || edge->isCut()){ //ignore if street full
-				//cout << "	Road full/cut\n"	;
+			if (edge->curr_number_cars == edge->max_number_cars || edge->isCut()) //ignore if street full
 				continue;
-			}
-			
 			if (adjacent->getIDMask() == dest->getIDMask()){
-				cout << "		!SUCCESS! FOUND SOLUTION\n";
-				adjacent->path = &curr;
+				adjacent->path = *(this->vertexSet.find(&curr));
 				return;
 			}
 			
@@ -334,16 +319,8 @@ void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest) {
 					continue;
 				}
 			
-			//cout << "FINISED PROCESSING\n";
 			open_list.push_back(*adjacent);
-			//cout << "[ ";
-			//for (Vertex<T> temp : open_list)
-				//cout << temp.getIDMask() << ", ";
-			//cout << " ]\n[ ";
-			//for(Vertex<T> temp : closed_list)
-				//cout << temp.getIDMask() << ", ";
-			//cout << " ]\n";
-			adjacent->path = &curr;
+			adjacent->path = *(this->vertexSet.find(&curr));
 		}
 		closed_list.push_back(curr);
 	}
