@@ -247,6 +247,7 @@ void Graph<T>::updatePath( Vertex<T> *v){
 	while( src != NULL){
 		Edge<T> * edge = src->adjacent[dest->id_mask];
 		edge->curr_number_cars++;
+		dest->path = NULL;
 		dest = src;
 		src = src->path;
 	}
