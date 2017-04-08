@@ -8,8 +8,9 @@
 #include <map>
 #include <cmath>
 
-#define EDGES_FILE "rsc/Edges.txt"
-#define STREETS_FILE "rsc/Streets.txt"
+#define NODES_FILE "rsc/Nodes4.txt"
+#define EDGES_FILE "rsc/Edges4.txt"
+#define STREETS_FILE "rsc/Streets4.txt"
 
 using namespace std;
 
@@ -71,7 +72,7 @@ void updateBounds(const Vertex<T> *v) {
 template<class T>
 void loadNodes(Graph<T> &graph) {
 	//Format: nodeID;latitudeDegrees;longitudeDegrees;longitudeRadians;latitudeRadians
-	string line, file_name = "rsc/Nodes.txt";
+	string line, file_name = NODES_FILE;	
 	ifstream file;
 	file.open(file_name);
 	if (!file.is_open()) {
