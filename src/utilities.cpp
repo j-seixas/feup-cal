@@ -4,7 +4,7 @@
 using namespace std;
 static string previous = "";
 
-string nextName(string name){
+string nextStreetName(){
 	int sz = previous.size();
 	if (sz == 0)
 		previous = "A";
@@ -27,10 +27,6 @@ string nextName(string name){
 			previous[ sz - 1]++;
 	}
 	return previous;
-}
-
-string nextStreetName(){
-	return nextName(previous);
 }
 
 uint16 getInput() {

@@ -1,7 +1,7 @@
 IDIR= ./headers
 GRAPH_DIR=./graph_viewer
 CC=g++
-CFLAGS= -I $(IDIR) -Wall
+CFLAGS= -I $(IDIR) -Wall -Wextra
 
 ODIR= ./obj
 

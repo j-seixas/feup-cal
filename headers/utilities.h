@@ -69,6 +69,7 @@ void updateBounds(const Vertex<T> *v) {
 		init = true;
 	}
 }
+
 template<class T>
 void loadNodes(Graph<T> &graph) {
 	//Format: nodeID;latitudeDegrees;longitudeDegrees;longitudeRadians;latitudeRadians
@@ -101,7 +102,6 @@ void loadNodes(Graph<T> &graph) {
 template<class T>
 void loadEdges(Graph<T> &graph) {
 	//Format: edgeID;node1ID;node2ID;
-	
 	string line;
 	ifstream file;
 	file.open(EDGES_FILE);
@@ -117,7 +117,7 @@ void loadEdges(Graph<T> &graph) {
 		Vertex<T>* src = graph.getVertexByIDMask( node_big_to_small[srcID] );
 		Vertex<T>* dst = graph.getVertexByIDMask( node_big_to_small[dstID] );
 		if (src != nullptr && dst != nullptr)
-			graph.addEdge(new Edge<T>(dst, edgeID, calculateDistance(src, dst)),src);
+			graph.addEdge(new Edge<T>(src, dst, edgeID, calculateDistance(src, dst)),src);
 	}
 	file.close();
 }
@@ -144,18 +144,18 @@ void loadStreets(Graph<T> &graph) {
 		getline(iss, isTwoWaysStr);
 		isTwoWays = (isTwoWaysStr == "True");
 		for (Vertex<T> * vertex : graph.getVertexSet() ){
-			auto edge = vertex->getAdjacent().find(edgeID);
-			if( edge != vertex->getAdjacent().end() ){
-				Edge<T> *ed = (*edge).second;
-				ed->setName(streetName);
-				ed->setNameMask( nextStreetName() );
-				ed->setTwoWays(isTwoWays);
-				if (isTwoWays) {
-					//If it's two ways, create another edge which is the opposite of the original and so is its ID.
-					Edge<T>* oppositeEdge = new Edge<T>(vertex, -1 * ed->getID(), calculateDistance(vertex, ed->getDest()));
-					oppositeEdge->setName(streetName);
-					oppositeEdge->setNameMask(nextStreetName());
-					graph.addEdge(oppositeEdge, ed->getDest());
+			for( pair<long long int , Edge<T> *> p : vertex->getAdjacent() )
+				if (p.second->getID() == edgeID){
+					Edge<T> *ed = p.second;
+					ed->setName(streetName);
+					ed->setNameMask( nextStreetName() );
+					ed->setTwoWays(isTwoWays);
+					if (isTwoWays) {
+						//If it's two ways, create another edge which is the opposite of the original and so is its ID.
+						Edge<T>* oppositeEdge = new Edge<T>(ed->getDest() , vertex, -1 * ed->getID(), calculateDistance(vertex, ed->getDest()));
+						oppositeEdge->setName(streetName);
+						oppositeEdge->setNameMask(nextStreetName());
+						graph.addEdge(oppositeEdge, ed->getDest());
 				}
 			}
 		}

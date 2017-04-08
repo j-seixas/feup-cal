@@ -12,7 +12,6 @@ void initGraph(Graph<long long int> &graph){
 	loadStreets(graph);
 	std::chrono::high_resolution_clock::time_point final = std::chrono::high_resolution_clock::now();
 	cout << "   Loading Time: " << std::chrono::duration_cast<std::chrono::duration<double>>(final - current).count() << "s\n";
-	graph.initDestinations();
 }
 
 void initGraphViewer(GraphViewer *gv){
@@ -29,13 +28,12 @@ void run() {
 	initGraphViewer(gv);
 	do{
 		graph.updateGraphViewer(gv);
-	} while(menu(graph));
+	} while(menu(graph,gv));
 	gv->closeWindow();
 	delete gv;
-	
 }
 
-int main(int argc , char *argv[]) {
+int main() {
 	run();
 	return 0;
 }

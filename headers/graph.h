@@ -3,10 +3,11 @@
 
 #include "../graph_viewer/graphviewer.h"
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <unordered_set>
 #include <list>
 #include <climits>
+#include <algorithm>
 #include <string>
 #include <iostream>
 using namespace std;
@@ -20,24 +21,24 @@ template<class T> pair<int, int> calculatePosition(Vertex<T>* v);
 
 const int INT_INFINITY = INT_MAX;
 
-/*
- * ================================================================================================
- * Class Vertex
- * ================================================================================================
+/** 
+	@brief Class Vertex 
+	@var ID Id used to identify the map (gotten from the files)
+	@var id_mask Id_mask that is used by the program (assigned at the loading stage, starts from 0 and increments)
+	@var latitudeRadians Latitude of the vertex
+	@var longitudeRadians Longitude of the vertex
+	@var adjacent Hash map where key is id_mask of destination Vertex, value is the Edge
+	@var dist Used for the A* algorithm
+	@var visited Used for the dfs like visit
  */
 template<class T>
 class Vertex {
-	/*!
-	 *	Vertex information
-	 */
 	T ID;
 	long long int id_mask;
 	double latitudeRadians;
 	double longitudeRadians;
-	map<long long int,Edge<T>*> adjacent;
-	/*!
-	 *	Reserved for algorithms
-	 */
+	unordered_map<long long int,Edge<T>*> adjacent;
+
 	int dist;
 	bool visited = false;
 public:
@@ -52,8 +53,10 @@ public:
 	inline long long int getIDMask() const {return this->id_mask;}
 	inline double getLatitude() const { return latitudeRadians; }
 	inline double getLongitude() const { return longitudeRadians; }
-	inline map<long long int,Edge<T>*> &getAdjacent() { return adjacent; }
+	inline unordered_map<long long int,Edge<T>*> &getAdjacent() { return adjacent; }
 	inline int getDist() const { return dist; }
+	Edge<T> * getEdgeDestTo( Vertex<T> * dest) const;
+
 
 	void setInfo(T id) { ID = id; }
 	void setMaskID(long long int mask) { id_mask = mask; }
@@ -76,7 +79,7 @@ struct vertex_greater_than {
 template<class T>
 void Vertex<T>::addEdge(Vertex<T> *dest, int w) {
 	Edge<T> *edgeD = new Edge<T>(dest, w);
-	adjacent.insert(pair<long long int , Edge<T>* > (edgeD->ID , edgeD) );
+	adjacent.insert(pair<long long int , Edge<T>* > (edgeD->dest->id_mask , edgeD) );
 }
 
 template<class T>
@@ -88,7 +91,7 @@ void Vertex<T>::addEdgeID(Vertex<T> *dest, const T &id) {
 
 template<class T>
 void Vertex<T>::addEdge(Edge<T> *edge) {
-	adjacent.insert(pair<long long int , Edge<T> *>(edge->ID , edge));
+	adjacent.insert(pair<long long int , Edge<T> *>(edge->dest->id_mask , edge));
 }
 
 template <class T>
@@ -104,58 +107,52 @@ list<Vertex<T> *> Vertex<T>::backtrace(){
 	return temp;
 }
 
-
 /* ================================================================================================
  * Class Edge
  * ================================================================================================
  */
 template<class T>
 class Edge {
+	Vertex<T> * sourc;
 	Vertex<T> * dest;
 	unsigned int weight; //its in m
 	T ID;
 	const unsigned int max_number_cars;
 	unsigned int curr_number_cars = 0;
-	vector<long long int> car_dest; //Vector of mask_ids of the destination vertices
 	string streetName;
 	bool isTwoWays;
 	bool is_cut;
 
 	string name_mask;
 public:
-	Edge(Vertex<T> *d, T id, int w);
+	Edge(Vertex<T> * s, Vertex<T> *d, T id, int w);
 	Edge() : dest(NULL), weight(0) , ID(0) , max_number_cars(0){};
 
-	void cutRoad() {is_cut = true;}
-	bool isFull() const;
-	bool isCut() const {return is_cut;}
+	inline void cutRoad() {is_cut = true;}
+	inline bool isFull() const {return this->curr_number_cars == this->max_number_cars;}
+	inline bool isCut() const {return is_cut;}
 
-	void setName(string s) {streetName = s;}
-	void setNameMask(string s) {name_mask = s;}
-	void setTwoWays(bool b) {isTwoWays = b;}
+	inline void setName(string s) {streetName = s;}
+	inline void setNameMask(string s) {name_mask = s;}
+	inline void setTwoWays(bool b) {isTwoWays = b;}
 
-	T getID() const {return ID;}
-	string getName() const {return this->streetName;}
-	bool getTwoWays() const {return this->isTwoWays;}
-	unsigned int getMaxCars() const {return this->max_number_cars;}
-	unsigned int getWeight() const {return this->weight;}
-	Vertex<T>* getDest() {return this->dest;}
-	string getNameMask() const {return this->name_mask;}
+	inline T getID() const {return ID;}
+	inline string getName() const {return this->streetName;}
+	inline bool getTwoWays() const {return this->isTwoWays;}
+	inline unsigned int getMaxCars() const {return this->max_number_cars;}
+	inline unsigned int getWeight() const {return this->weight;}
+	inline Vertex<T>* getDest() {return this->dest;}
+	inline string getNameMask() const {return this->name_mask;}
 
-	bool operator<(const Edge<T> e) {return this->ID < e.ID;}
+	inline bool operator<(const Edge<T> e) {return this->ID < e.ID;}
 
 	friend class Graph<T> ;
 	friend class Vertex<T> ;
 };
 
 template<class T>
-Edge<T>::Edge(Vertex<T> *d, T id, int w) :
-		dest(d), weight(w), ID(id), max_number_cars(rand() % 25 + 25), isTwoWays(true), is_cut(false) { }
-
-template<class T>
-bool Edge<T>::isFull() const {
-	return car_dest.size() == this->max_number_cars;
-}
+Edge<T>::Edge(Vertex<T> *sourc , Vertex<T> *d, T id, int w) :
+		sourc(sourc), dest(d), weight(w), ID(id), max_number_cars(rand() % 25 + 25), isTwoWays(true), is_cut(false) { }
 
 struct hashFuncs{
 	template<class T>
@@ -177,6 +174,7 @@ class Graph {
 	unordered_set<Vertex<T> *,hashFuncs,hashFuncs> vertexSet;
 	list<Vertex<T> *> cars_destination;
 	unsigned long int counter = 0;
+
 public:
 	bool show_name = true;
 	bool addVertex(Vertex<T> *v);
@@ -188,14 +186,17 @@ public:
 	inline unordered_set<Vertex<T> *,hashFuncs,hashFuncs> &getVertexSet() {return this->vertexSet;}
 	inline int getNumVertex() const {return this->vertexSet.size();}
 	inline unsigned long int getCounter() const {return this->counter;}
+	inline list<Vertex<T> *> &getCarsDest() {return this->cars_destination;}
 	Vertex<T>* getVertexByID(const T &v) const;
 	Vertex<T>* getVertexByIDMask(long long int id) const;
 
+
+	void updatePath( Vertex<T> *v);
 	void resetAlgorithmVars();
 	void generateCarPaths( Vertex<T> *v);
 	void Astar(Vertex<T> *sourc, Vertex<T> *dest);
 	bool moveCar(Edge<T> &from, long long int &car, Edge<T> &to);
-	bool cutStreet(string streetName);
+	Vertex<T> * cutStreet(string streetName);
 	void initDestinations();
 	void updateGraphViewer(GraphViewer *gv) const;
 };
@@ -211,61 +212,34 @@ void Graph<T>::resetAlgorithmVars(){
 template <class T>
 void Graph<T>::generateCarPaths(Vertex<T> *v) {
 	v->visited = true;
-	if ( (rand() % 5) == 0 )
+	if ( (rand() % 10) == 1 ){
 		this->cars_destination.push_back(v);
-	for (pair<long long int , Edge<T> *> p : v->adjacent)
+	}
+	for (pair<long long int , Edge<T> *> p : v->adjacent){
 	    if ( p.second->dest->visited == false )
 	    	generateCarPaths(p.second->dest);
-}
-/*
-template<class T>
-bool Graph<T>::moveCar(Edge<T> &from, long long int &car, Edge<T> &to){
-	if(to.isFull())
-		return false;
-	auto it = find(from.car_dest.begin(), from.car_dest.end());
-	if(it == from.car_dest.end())
-		return false;
-	from.car_dest.erase(it);
-	to.car_dest.push_back(car);
-}*/
-
-template<class T>
-void Graph<T>::initDestinations() {
-	for (Vertex<T> *v : this->vertexSet){
-		for(pair<long long int , Edge<T>* > p : v->adjacent){
-			Edge<T> *e = p.second;
-			unsigned int max = e->max_number_cars;
-			int num_cars = rand() % max;
-			for(int k = 0; k < num_cars; k++){
-				long long int dest_id_mask = rand() % vertexSet.size();
-				e->car_dest.push_back(dest_id_mask);
-			}
-		}
 	}
 }
 
+/**
+	@brief Cuts the designed street
+	@param streetName Name of the street to cut
+	@return Origin Vertex of the Street or NULL if the street was not found
+*/
 template<class T>
-bool Graph<T>::cutStreet(string streetName) {
-	//cout << "Cutting street  |" << streetName << "| \n";
+Vertex<T> * Graph<T>::cutStreet(string streetName) {
 	for (Vertex<T> * vertex : this->vertexSet) {
 		for(pair<long long int , Edge<T>* > p : vertex->adjacent){
-			//cout << (p.second->getNameMask() == streetName) << " - |" << p.second->getNameMask() << "| |"
-			// 	 << streetName << "|\n";
 			if (p.second->getNameMask() == streetName) {
-				//cout << "	CUTTING " << p.second->getNameMask() << endl;
 				this->resetAlgorithmVars();
 				this->generateCarPaths(p.second->dest);
-
-				//for (Vertex<T> *v : this->cars_destination)
-					//cout << "ID = " << v->getIDMask() << endl;
-
 				p.second->cutRoad();
-				//this->show_name = false;
-				return true;
+				this->show_name = false;
+				return vertex;
 			}
 		}
 	}
-	return false;
+	return NULL;
 }
 
 template<class T>
@@ -277,9 +251,10 @@ void Graph<T>::updateGraphViewer(GraphViewer *gv) const {
 	}
 	for (Vertex<T> *v_it : this->vertexSet){
 		for (pair<long long int, Edge<T>* > e_it : v_it->getAdjacent()) {
-			string label = ( (this->show_name) ? (e_it.second->getNameMask() + " ") : "" ) + to_string(e_it.second->car_dest.size()) + "/" + to_string(e_it.second->getMaxCars()) + " " + to_string(e_it.second->getWeight()) + "m. ";
+			string label = ( (this->show_name) ? (e_it.second->getNameMask() + " ") : "" ) + to_string(e_it.second->curr_number_cars) + "/" + to_string(e_it.second->getMaxCars()) + " " + to_string(e_it.second->getWeight()) + "m. ";
 			gv->addEdge(ID, v_it->getIDMask(), (e_it.second->dest)->getIDMask(), EdgeType::DIRECTED);
 			gv->setEdgeLabel(ID, label);
+			gv->setEdgeThickness(ID, (e_it.second->curr_number_cars/e_it.second->max_number_cars)*10 + 1);
 			if (e_it.second->isFull())
 				gv->setEdgeColor(ID, "yellow");
 			else if (e_it.second->isCut())
@@ -287,9 +262,23 @@ void Graph<T>::updateGraphViewer(GraphViewer *gv) const {
 			ID++;
 		}
 	}
-
-	//cout << "Rearranging" << endl;
 	gv->rearrange();
+}
+
+/**
+	@brief Updates the number of cars of the path leading to vertex
+	@param v Pointer to destination vertex (member variable path gives the path to that vertex)
+*/
+template<class T>
+void Graph<T>::updatePath( Vertex<T> *v){
+	Vertex<T> *src = v->path;
+	Vertex<T> *dest = v;
+	while( src != NULL){
+		cout << "Updating edge " << src->id_mask << "->" << dest->id_mask << "\n";
+		(src->adjacent[dest->id_mask])->curr_number_cars++;
+		dest = src;
+		src = src->path;
+	}
 }
 
 //TODO check if there really is a need to check if vertex already exists, if there is a hash_table might
@@ -351,42 +340,65 @@ Vertex<T>* Graph<T>::getVertexByIDMask(long long int id) const {
 
 template<class T>
 void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest) {
-	for (unsigned int i = 0; i < vertexSet.size(); i++) {
-		vertexSet[i]->path = NULL;
-		vertexSet[i]->dist = INT_INFINITY;
+	for (Vertex<T> * v : this->vertexSet) {
+		v->path = NULL;
+		v->dist = INT_INFINITY;
 	}
+	const unsigned int MAX_EXPLORE_DEPTH = this->vertexSet.size() * 0.75;
 	sourc->dist = 0;
-	list<Vertex<T> *> closed_list;
-	vector<Vertex<T> *> open_list;
-	open_list.push_back(sourc);
+	list<Vertex<T> > closed_list;
+	vector<Vertex<T> > open_list;
+	open_list.reserve(MAX_EXPLORE_DEPTH + 1);
+	open_list.push_back(*sourc);
 	while ( !open_list.empty() ){
-		make_heap( open_list.begin() , open_list.end() , [&] (Vertex<T> *v1 , Vertex<T> *v2) {
-			return v1->getID() < v2->getID();
+		if(closed_list.size() >= MAX_EXPLORE_DEPTH ){ //if no path was found
+			dest->path = NULL;
+			return;
+		}
+		make_heap( open_list.begin() , open_list.end() , [] (Vertex<T> v1 , Vertex<T> v2) {
+			return v1.getDist() > v2.getDist(); //to make heap minimum to max
 		} );
-		Vertex<T> *curr = open_list.front();  open_list.pop_back();
-		//cout << "Processing v=" << curr->getIDMask() << endl;
-		for ( Edge<T> edge : curr->adjacent){
-			if (edge.curr_number_cars == edge.max_number_cars) //ignore if street full
+		Vertex<T> curr = open_list.front();  open_list.erase(open_list.begin());
+		//cout << "VERTEX = " << curr.getIDMask() << endl;
+		for ( pair<long long int,Edge<T>*> p : curr.adjacent){
+			Edge<T> *edge = p.second;
+			Vertex<T> *adjacent = edge->dest;
+			//cout << "Processing, " << curr.getIDMask() << " -> " <<  edge->dest->getIDMask() << endl;
+			if (edge->curr_number_cars == edge->max_number_cars || edge->isCut()){ //ignore if street full
+				//cout << "	Road full/cut\n"	;
 				continue;
-			Vertex<T> *adjacent = edge.dest;
-			if (adjacent->getID() == dest->getID()){
-				adjacent->path = curr;
+			}
+			
+			if (adjacent->getIDMask() == dest->getIDMask()){
+				cout << "		!SUCCESS! FOUND SOLUTION\n";
+				adjacent->path = &curr;
 				return;
 			}
 			
-			adjacent->dist = curr->dist + edge.weight*1000 + calculateDistance(adjacent,dest)*1000;
-			//TODO can be optimized to just one cycle (with more branches)
-			for (Vertex<T> *temp : open_list)
-				if ((temp->getID() == adjacent->getID())
-						&& (temp->dist < adjacent->dist))
+			adjacent->dist = curr.dist + edge->weight + calculateDistance(adjacent,dest);
+			//cout << "	Total = " << adjacent->dist << "	F = " << curr.dist + edge->weight << "	H = " << calculateDistance(adjacent,dest) << "\n";
+			for (Vertex<T> temp : open_list)
+				if ((temp.getIDMask() == adjacent->getIDMask()) && (temp.dist <= adjacent->dist)){
+					//cout << "	smaller in openlist \n";
 					continue;
-			for (Vertex<T> *temp : closed_list)
-				if ((temp->getID() == adjacent->getID())
-						&& (temp->dist < adjacent->dist))
+				}
+			
+			for (Vertex<T> temp : closed_list)
+				if ((temp.getIDMask() == adjacent->getIDMask()) && (temp.dist <= adjacent->dist)){
+					//cout << "	smaller in closedlist \n";
 					continue;
-			open_list.push_back(adjacent);
-			cout << "	PATH = " << curr->getIDMask() << endl;
-			adjacent->path = curr;
+				}
+			
+			//cout << "FINISED PROCESSING\n";
+			open_list.push_back(*adjacent);
+			//cout << "[ ";
+			//for (Vertex<T> temp : open_list)
+				//cout << temp.getIDMask() << ", ";
+			//cout << " ]\n[ ";
+			//for(Vertex<T> temp : closed_list)
+				//cout << temp.getIDMask() << ", ";
+			//cout << " ]\n";
+			adjacent->path = &curr;
 		}
 		closed_list.push_back(curr);
 	}
