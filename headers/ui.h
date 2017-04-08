@@ -44,6 +44,7 @@ bool menu(Graph<T> &graph, GraphViewer *gv){
 			Vertex<T> * v = graph.cutStreet(streetName);
 			if ( v != NULL)
 				return carsMovingMenu(graph,v,gv);
+			graph.show_name = true;
 			return true;
 		}
 

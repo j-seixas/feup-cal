@@ -37,17 +37,16 @@ class Vertex {
 	long long int id_mask;
 	double latitudeRadians;
 	double longitudeRadians;
-	unordered_map<long long int,Edge<T>*> adjacent;
+	unordered_map<long long int,Edge<T>* > adjacent;
 
 	int dist;
 	bool visited = false;
 public:
-	Vertex(T in, double latRad, double longRad) :
-		 ID(in), latitudeRadians(latRad), longitudeRadians(longRad), dist(0) , path(NULL){};
+	Vertex(T in, double latRad, double longRad) : 
+		ID(in), latitudeRadians(latRad), longitudeRadians(longRad), dist(0) , path(NULL){};
  	Vertex(long long int id_mask) : id_mask(id_mask) {};
-	void addEdge(Vertex<T> *dest, int w);
-	void addEdge(Edge<T> *edge);
-	void addEdgeID(Vertex<T> *dest, const T &id);
+
+	inline void addEdge(Edge<T> *edge) { this->adjacent.emplace( edge->dest->id_mask , edge ); }
 
 	inline T getID() const { return ID; }
 	inline long long int getIDMask() const {return this->id_mask;}
@@ -55,44 +54,16 @@ public:
 	inline double getLongitude() const { return longitudeRadians; }
 	inline unordered_map<long long int,Edge<T>*> &getAdjacent() { return adjacent; }
 	inline int getDist() const { return dist; }
-	Edge<T> * getEdgeDestTo( Vertex<T> * dest) const;
 
 
-	void setInfo(T id) { ID = id; }
-	void setMaskID(long long int mask) { id_mask = mask; }
+	inline void setInfo(T id) { ID = id; }
+	inline void setMaskID(long long int mask) { id_mask = mask; }
 	list<Vertex<T> *> backtrace();
-
-	bool operator<(const Vertex<T> vertex);
 
 	Vertex* path;
 
 	friend class Graph<T> ;
 };
-
-template<class T>
-struct vertex_greater_than {
-	bool operator()(Vertex<T> * a, Vertex<T> * b) const {
-		return a->getDist() > b->getDist();
-	}
-};
-
-template<class T>
-void Vertex<T>::addEdge(Vertex<T> *dest, int w) {
-	Edge<T> *edgeD = new Edge<T>(dest, w);
-	adjacent.insert(pair<long long int , Edge<T>* > (edgeD->dest->id_mask , edgeD) );
-}
-
-template<class T>
-void Vertex<T>::addEdgeID(Vertex<T> *dest, const T &id) {
-	int w = calculateDistance(this, dest);
-	Edge<T> *edgeD = new Edge<T>(dest, id, w);
-	adjacent.insert(pair<long long int , Edge<T>* > (edgeD->ID , edgeD) );
-}
-
-template<class T>
-void Vertex<T>::addEdge(Edge<T> *edge) {
-	adjacent.insert(pair<long long int , Edge<T> *>(edge->dest->id_mask , edge));
-}
 
 template <class T>
 list<Vertex<T> *> Vertex<T>::backtrace(){
@@ -113,7 +84,7 @@ list<Vertex<T> *> Vertex<T>::backtrace(){
  */
 template<class T>
 class Edge {
-	Vertex<T> * sourc;
+	//Vertex<T> * sourc;
 	Vertex<T> * dest;
 	unsigned int weight; //its in m
 	T ID;
@@ -125,7 +96,8 @@ class Edge {
 
 	string name_mask;
 public:
-	Edge(Vertex<T> * s, Vertex<T> *d, T id, int w);
+	Edge(Vertex<T> *d, T id, int w) :
+		dest(d), weight(w), ID(id), max_number_cars(rand() % 100 + 25), isTwoWays(true), is_cut(false) { }
 	Edge() : dest(NULL), weight(0) , ID(0) , max_number_cars(0){};
 
 	inline void cutRoad() {is_cut = true;}
@@ -150,10 +122,10 @@ public:
 	friend class Vertex<T> ;
 };
 
-template<class T>
-Edge<T>::Edge(Vertex<T> *sourc , Vertex<T> *d, T id, int w) :
-		sourc(sourc), dest(d), weight(w), ID(id), max_number_cars(rand() % 25 + 25), isTwoWays(true), is_cut(false) { }
-
+/* ================================================================================================
+ * Class Graph
+ * ================================================================================================
+ */
 struct hashFuncs{
 	template<class T>
 	size_t operator()(const Vertex<T> *v) const{
@@ -165,10 +137,6 @@ struct hashFuncs{
 	}
 };
 
-/* ================================================================================================
- * Class Graph
- * ================================================================================================
- */
 template<class T>
 class Graph {
 	unordered_set<Vertex<T> *,hashFuncs,hashFuncs> vertexSet;
@@ -275,50 +243,27 @@ void Graph<T>::updatePath( Vertex<T> *v){
 	Vertex<T> *dest = v;
 	while( src != NULL){
 		cout << "Updating edge " << src->id_mask << "->" << dest->id_mask << "\n";
-		(src->adjacent[dest->id_mask])->curr_number_cars++;
+		cout << "ADJ SIZE = " << src->adjacent.size() << endl;
+		auto it = src->adjacent.find(dest->id_mask);
+		cout << "FOUND\n";
+		if ( it != src->adjacent.end()){
+			cout << "INC\n";
+			(*it).second->curr_number_cars++;
+		}
+		else
+			cout << "Unknown vertex! " << dest->id_mask << "\n";
+		cout << "inc cars\n";
 		dest = src;
 		src = src->path;
 	}
 }
 
-//TODO check if there really is a need to check if vertex already exists, if there is a hash_table might
-// 	   not be the most appropriate structure
 template<class T>
 bool Graph<T>::addVertex(Vertex<T> *v) {
 	//if(getVertexByID(v->ID) != nullptr)
 	//	return false;
 	v->id_mask = this->counter++;
 	this->vertexSet.insert(v);
-	return true;
-}
-
-template<class T>
-bool Graph<T>::addEdge(const T &sourc, const T &dest, int w) {
-	typename vector<Vertex<T>*>::iterator it = vertexSet.begin();
-	typename vector<Vertex<T>*>::iterator ite = vertexSet.end();
-	int found = 0;
-	Vertex<T> *vS, *vD;
-	while (found != 2 && it != ite) {
-		if ((*it)->ID == sourc) {
-			vS = *it;
-			found++;
-		}
-		if ((*it)->ID == dest) {
-			vD = *it;
-			found++;
-		}
-		it++;
-	}
-	if (found != 2)
-		return false;
-	vS->addEdge(vD, w);
-
-	return true;
-}
-
-template<class T>
-bool Graph<T>::addEdge(Edge<T>* edge, Vertex<T>* source) {
-	source->addEdge(edge);
 	return true;
 }
 

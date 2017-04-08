@@ -117,7 +117,7 @@ void loadEdges(Graph<T> &graph) {
 		Vertex<T>* src = graph.getVertexByIDMask( node_big_to_small[srcID] );
 		Vertex<T>* dst = graph.getVertexByIDMask( node_big_to_small[dstID] );
 		if (src != nullptr && dst != nullptr)
-			graph.addEdge(new Edge<T>(src, dst, edgeID, calculateDistance(src, dst)),src);
+			src->addEdge( new Edge<T>(dst, edgeID, calculateDistance(src, dst)) );
 	}
 	file.close();
 }
@@ -152,10 +152,10 @@ void loadStreets(Graph<T> &graph) {
 					ed->setTwoWays(isTwoWays);
 					if (isTwoWays) {
 						//If it's two ways, create another edge which is the opposite of the original and so is its ID.
-						Edge<T>* oppositeEdge = new Edge<T>(ed->getDest() , vertex, -1 * ed->getID(), calculateDistance(vertex, ed->getDest()));
+						Edge<T>* oppositeEdge = new Edge<T>(vertex, -1 * ed->getID(), calculateDistance(vertex, ed->getDest()));
 						oppositeEdge->setName(streetName);
 						oppositeEdge->setNameMask(nextStreetName());
-						graph.addEdge(oppositeEdge, ed->getDest());
+						ed->getDest()->addEdge(oppositeEdge);
 				}
 			}
 		}
