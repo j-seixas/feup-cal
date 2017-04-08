@@ -15,16 +15,14 @@ void  carsMovingMenu( Graph<T> &graph , Vertex<T> *sourc , GraphViewer *gv){
 		cout << "Generating for " << sourc->getIDMask() << " -> " << dest->getIDMask() << " \n";
 		//wait either 1 second or less if user inputs something
 		std::chrono::high_resolution_clock::time_point current = std::chrono::high_resolution_clock::now();
-		while ( (std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - current).count() < 1) && cin.peek() == EOF ){}	
-		if (cin.peek() != EOF)
-			cin.get();
+		//while ( (std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - current).count() < 1) && cin.peek() == EOF ){}	
+		//if (cin.peek() != EOF)
+		//	cin.get();
 		current = std::chrono::high_resolution_clock::now();
 		graph.Astar(sourc,dest);
 		cout << "A* took " << std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - current).count() << "s \n";
-		if (dest->path != NULL){
-			cout << "Updating Path \n";
+		if (dest->path != NULL)
 			graph.updatePath(dest);
-		}
 		else
 			cout << "No path found for " << sourc->getIDMask() << " -> " << dest->getIDMask() << "\n"; 
 		graph.updateGraphViewer(gv);

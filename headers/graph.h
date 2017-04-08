@@ -290,7 +290,7 @@ void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest) {
 	while ( !open_list.empty() ){
 		if(closed_list.size() >= MAX_EXPLORE_NODES ){ //if no path was found
 			dest->path = NULL;
-			return;
+			break;
 		}
 		make_heap( open_list.begin() , open_list.end() , [] (Vertex<T> v1 , Vertex<T> v2) { return v1.getDist() > v2.getDist(); } );
 		Vertex<T> curr = open_list.front();  
@@ -303,28 +303,24 @@ void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest) {
 				continue;
 			if (adjacent->getIDMask() == dest->getIDMask()){
 				adjacent->path = *(this->vertexSet.find(&curr));
-				return;
+				break;
 			}
 			
 			adjacent->dist = curr.dist + edge->weight + calculateDistance(adjacent,dest);
-			//cout << "	Total = " << adjacent->dist << "	F = " << curr.dist + edge->weight << "	H = " << calculateDistance(adjacent,dest) << "\n";
 			for (Vertex<T> temp : open_list)
-				if ((temp.getIDMask() == adjacent->getIDMask()) && (temp.dist <= adjacent->dist)){
-					//cout << "	smaller in openlist \n";
+				if ((temp.getIDMask() == adjacent->getIDMask()) && (temp.dist <= adjacent->dist))
 					continue;
-				}
 			
 			for (Vertex<T> temp : closed_list)
-				if ((temp.getIDMask() == adjacent->getIDMask()) && (temp.dist <= adjacent->dist)){
-					//cout << "	smaller in closedlist \n";
+				if ((temp.getIDMask() == adjacent->getIDMask()) && (temp.dist <= adjacent->dist))
 					continue;
-				}
 			
 			open_list.push_back(*adjacent);
 			adjacent->path = *(this->vertexSet.find(&curr));
 		}
 		closed_list.push_back(curr);
 	}
+	cout << "	A* explored " << closed_list.size() << " nodes\n";
 }
 
 #endif /* GRAPH_H */
