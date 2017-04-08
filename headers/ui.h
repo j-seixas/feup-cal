@@ -8,17 +8,14 @@ using namespace std;
 
 
 template<class T>
-bool menu(Graph<T> graph){
+bool menu(Graph<T> &graph){
 	cout << "Menu" << endl
 		 << "  1. Cut road" << endl
 		 << "  2. Update" << endl
 		 << "  0. Exit" << endl;
 		uint16 option = getInput();
 		cout << endl;
-		if(option == 0){
-			return false;
-		}
-		else if(option == 1){
+		if(option == 1){
 			string streetName = getStreetName();
 			graph.cutStreet(streetName);
 			return true;

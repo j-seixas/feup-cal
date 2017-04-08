@@ -180,7 +180,7 @@ class Graph {
 	list<Vertex<T> *> cars_destination;
 	unsigned long int counter = 0;
 public:
-	bool show_name = false;
+	bool show_name = true;
 	bool addVertex(Vertex<T> *v);
 	bool addEdge(const T &sourc, const T &dest, int w);
 	bool addEdge(Edge<T>* edge, Vertex<T>* from);
@@ -193,7 +193,7 @@ public:
 	Vertex<T>* getVertexByID(const T &v) const;
 	Vertex<T>* getVertexByIDMask(long long int id) const;
 
-
+	void resetAlgorithmVars();
 	void generateCarPaths( Vertex<T> *v);
 	void Astar(Vertex<T> *sourc, Vertex<T> *dest);
 	bool moveCar(Edge<T> &from, long long int &car, Edge<T> &to);
@@ -202,14 +202,21 @@ public:
 	void updateGraphViewer(GraphViewer *gv) const;
 };
 
-//basically a dfs
+template<class T>
+void Graph<T>::resetAlgorithmVars(){
+	for (Vertex<T> * v : this->vertexSet){
+		v->visited = false;
+	}
+}
+
+//basically a dfs to generate paths beyond the road which was cut
 template <class T>
 void Graph<T>::generateCarPaths(Vertex<T> *v) {
 	v->visited = true;
-	if ( (rand() % 5) == 0)
+	if ( (rand() % 5) == 0 )
 		this->cars_destination.push_back(v);
 	for (pair<long long int , Edge<T> > p : v->adjacent)
-	    if ( p.second.dest == false )
+	    if ( p.second.dest->visited == false )
 	    	generateCarPaths(p.second.dest);
 }
 
@@ -241,11 +248,21 @@ void Graph<T>::initDestinations() {
 
 template<class T>
 bool Graph<T>::cutStreet(string streetName) {
+	cout << "Cutting street  |" << streetName << "| \n";
 	for (Vertex<T> * vertex : this->vertexSet) {
 		for(pair<long long int , Edge<T> > p : vertex->adjacent){
+			//cout << (p.second.getNameMask() == streetName) << " - |" << p.second.getNameMask() << "| |"
+			// 	 << streetName << "|\n";
 			if (p.second.getNameMask() == streetName) {
+				cout << "	CUTTING " << p.second.getNameMask() << endl;
+				this->resetAlgorithmVars();
 				this->generateCarPaths(p.second.dest);
+
+				for (Vertex<T> *v : this->cars_destination)
+					cout << "ID = " << v->getIDMask() << endl;
+
 				p.second.cutRoad();
+				//this->show_name = false;
 				return true;
 			}
 		}
@@ -260,17 +277,20 @@ void Graph<T>::updateGraphViewer(GraphViewer *gv) const {
 		pair<int, int> position = calculatePosition(it);
 		gv->addNode(it->getIDMask(), position.first, position.second);
 	}
-	for (Vertex<T> *v_it : this->vertexSet)
+	for (Vertex<T> *v_it : this->vertexSet){
 		for (pair<long long int, Edge<T> > e_it : v_it->getAdjacent()) {
 			string label = ( (this->show_name) ? (e_it.second.getNameMask() + " ") : "" ) + to_string(e_it.second.car_dest.size()) + "/" + to_string(e_it.second.getMaxCars()) + " " + to_string(e_it.second.getWeight()) + "m. ";
 			gv->addEdge(ID, v_it->getIDMask(), (e_it.second.dest)->getIDMask(), EdgeType::DIRECTED);
 			gv->setEdgeLabel(ID, label);
 			if (e_it.second.isFull())
 				gv->setEdgeColor(ID, "yellow");
-			if (e_it.second.isCut())
+			else if (e_it.second.isCut())
 				gv->setEdgeColor(ID, "red");
 			ID++;
 		}
+	}
+
+	cout << "Rearranging" << endl;
 	gv->rearrange();
 }
 
