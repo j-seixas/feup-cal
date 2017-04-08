@@ -3,7 +3,6 @@
 #include "../headers/utilities.h"
 using namespace std;
 static string previous = "";
-static uint64 counter = 0;
 
 string nextName(string name){
 	int sz = previous.size();
@@ -34,10 +33,6 @@ string nextStreetName(){
 	return nextName(previous);
 }
 
-uint64 nextInteger(){
-	return counter++;
-}
-
 uint16 getInput() {
 	string line;
 	uint16 input;
@@ -66,6 +61,15 @@ string getStreetName(){
 	return streetName;
 }
 
+unsigned int numberOfLines(const char * file_name){
+    unsigned int number_of_lines = 0;
+    FILE *in = fopen(file_name, "r");
+    int ch;
+    while (EOF != ( ch =getc(in)))
+        if ('\n' == ch)
+            ++number_of_lines;
+    return number_of_lines;
+}
 
 void printSquareArray(int ** arr, unsigned int size){
 	for(unsigned int k = 0; k < size; k++){
