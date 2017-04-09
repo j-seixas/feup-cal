@@ -184,7 +184,7 @@ int calculateDistance(Vertex<T> *v1, Vertex<T> *v2) {
 					* sin(deltaLongitude / 2) * sin(deltaLongitude / 2);
 	double b = 2 * atan2(sqrt(a), sqrt(1 - a));
 	double c = earthRadius * b;
-	return c*1000;
+	return abs(c*1000);
 }
 
 
