@@ -370,7 +370,6 @@ void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest, const unsigned long int 
 		make_heap( open_list.begin() , open_list.end() , [] (Vertex<T> *v1 , Vertex<T> *v2) { return v1->getDist() > v2->getDist(); } );
 		Vertex<T> curr = *(open_list.front()) , *curr_ptr = open_list.front();  
 		open_list.erase(open_list.begin());
-		cout << "V = " << curr.id_mask << endl;
 		if (curr.id_mask == dest->id_mask){ //Here to guarantee optimal path
 			cout << "	!SUCESS!	\n";
 			cout << "	A* explored " << closed_list.size() << " nodes\n";
@@ -379,13 +378,11 @@ void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest, const unsigned long int 
 		
 		for ( pair<long long int,Edge<T>*> p : curr.adjacent){
 			Edge<T> *edge = p.second;  Vertex<T> *adjacent = edge->dest;
-			cout << "	ADJ = " << adjacent->id_mask << endl;
 			if (edge->curr_number_cars == edge->max_number_cars || edge->isCut()) //ignore if street full
 				continue;
 
 			int dist = curr_ptr->dist + edge->weight + //G
 							 calculateDistance(adjacent,dest); //H
-			cout << "		total = " << dist << ", prev = " << curr_ptr->dist << ", edge = " << edge->weight << ", H = " << calculateDistance(adjacent,dest) << endl;
 			auto o_it = open_list.begin();
 			for ( ; o_it != open_list.end() ; o_it++)
 				if ( (*o_it)->id_mask == adjacent->id_mask ){ //if vertex is in open list
@@ -394,11 +391,8 @@ void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest, const unsigned long int 
 						break;
 					}
 					else{ //current path better than the one in openlist
-						cout << "		Prev d = " << (*o_it)->dist << ", after = " << dist << endl;
-						cout << "		prev path = " << (*o_it)->path->id_mask << ", after = " << curr_ptr->id_mask << endl;
 						(*o_it)->dist = dist;
 						(*o_it)->path = curr_ptr;
-						//(*this->vertexSet.find( &(*o_it) ))->path = (*this->vertexSet.find( &curr ));
 						break;
 					}
 				}
