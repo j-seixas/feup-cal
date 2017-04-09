@@ -152,7 +152,7 @@ class Graph {
 
 public:
 	bool show_name = true;
-	bool addVertex(Vertex<T> *v);
+	void addVertex(Vertex<T> *v);
 	bool addEdge(const T &sourc, const T &dest, int w);
 	bool addEdge(Edge<T>* edge, Vertex<T>* from);
 	bool removeEdge(const T &sourc, const T &dest);
@@ -177,6 +177,10 @@ public:
 	void updateGraphViewer(GraphViewer *gv) const;
 };
 
+/**
+	@brief Resets the variables needed by the algorithms
+	@detail Time Complexity O(V) , Space Complexity O(1)
+*/
 template<class T>
 void Graph<T>::resetAlgorithmVars(){
 	for (Vertex<T> * v : this->vertexSet){
@@ -184,7 +188,11 @@ void Graph<T>::resetAlgorithmVars(){
 	}
 }
 
-//basically a dfs to generate paths beyond the road which was cut
+/**
+	@brief Generates paths of cars beyond the desired vertex
+	@param v Vertex to start generation from
+	@detail Time Complexity O(V+E) , Space Complexity O(V)
+*/
 template <class T>
 void Graph<T>::generateCarPaths(Vertex<T> *v) {
 	v->visited = true;
@@ -201,6 +209,7 @@ void Graph<T>::generateCarPaths(Vertex<T> *v) {
 	@brief Cuts the designed street
 	@param streetName Name of the street to cut
 	@return Origin Vertex of the Street or NULL if the street was not found
+	@detail Time Complexity O(V+E) , Space Complexity O(1)
 */
 template<class T>
 Vertex<T> * Graph<T>::cutStreet(string streetName) {
@@ -219,6 +228,11 @@ Vertex<T> * Graph<T>::cutStreet(string streetName) {
 	return NULL;
 }
 
+/**
+	@brief Initializes the nodes and edges of the Graph
+	@param gv Pointer to the graphviewer
+	@detail Time Complexity O( (V^2) + E) , Space Complexity O(1)
+*/
 template<class T>
 void Graph<T>::initializeGraphViewer(GraphViewer *gv) const {
 	int ID = 0;
@@ -239,6 +253,11 @@ void Graph<T>::initializeGraphViewer(GraphViewer *gv) const {
 	gv->rearrange();
 }
 
+/**
+	@brief Updates the nodes and edges of the Graph
+	@param gv Pointer to the graphviewer
+	@detail Time Complexity O(V+E) , Space Complexity O(1)
+*/
 template<class T>
 void Graph<T>::updateGraphViewer( GraphViewer *gv) const{
 	for (Vertex<T> * node : this->vertexSet){
@@ -268,6 +287,7 @@ void Graph<T>::updateGraphViewer( GraphViewer *gv) const{
 /**
 	@brief Updates the number of cars of the path leading to vertex
 	@param v Pointer to destination vertex (member variable path gives the path to that vertex)
+	@detail Time Complexity O(N) , Space Complexity O(1)
 */
 template<class T>
 void Graph<T>::updatePath( Vertex<T> *v){
@@ -285,13 +305,24 @@ void Graph<T>::updatePath( Vertex<T> *v){
 	cout << endl;
 }
 
+/**
+	@brief Adds a vertex to the graph
+	@param v Vertex to add
+	@detail Time Complexity O(1) , Space Complexity O(1);
+*/
 template<class T>
-bool Graph<T>::addVertex(Vertex<T> *v) {
+void Graph<T>::addVertex(Vertex<T> *v) {
 	v->id_mask = this->counter++;
 	this->vertexSet.insert(v);
 	return true;
 }
 
+/**
+	@brief Gets the designated vertex
+	@param id iID of the vertex
+	@return Vertex specified
+	@detail Time Complexity O(V) , Space Complexity O(1);
+*/
 template <class T>
 Vertex<T>* Graph<T>::getVertexByID(const T &v) const {
 	for(Vertex<T> * vertex : this->vertexSet)
@@ -300,6 +331,12 @@ Vertex<T>* Graph<T>::getVertexByID(const T &v) const {
 	return nullptr;
 }
 
+/**
+	@brief Gets the designated vertex
+	@param id id_mask of the vertex
+	@return Vertex specified
+	@detail Time Complexity O(1) , Space Complexity O(1);
+*/
 template <class T>
 Vertex<T>* Graph<T>::getVertexByIDMask(long long int id) const {
 	Vertex<T> * temp = new Vertex<T>(id);
@@ -329,7 +366,7 @@ void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest) {
 		make_heap( open_list.begin() , open_list.end() , [] (Vertex<T> v1 , Vertex<T> v2) { return v1.getDist() > v2.getDist(); } );
 		Vertex<T> curr = open_list.front();  
 		open_list.erase(open_list.begin());
-		cout << curr.getIDMask() << "->";
+		cout << curr.getIDMask() << "->";g
 		for ( pair<long long int,Edge<T>*> p : curr.adjacent){
 			Edge<T> *edge = p.second;
 			Vertex<T> *adjacent = edge->dest;
