@@ -142,13 +142,7 @@ void loadStreets(Graph<T> &graph) {
 		iss >> edgeID >> delimiter;
 		getline(iss, streetName, delimiter);
 		getline(iss, isTwoWaysStr, '\n');
-		cout << "|True| , input = |" << isTwoWaysStr << "CONA|\n";
-		if (strcmp(isTwoWaysStr.c_str(),"True") == 0)
-			isTwoWays = true;
-		else
-			isTwoWays = false;
-		
-		//cout << isTwoWays << endl;
+		isTwoWays = (isTwoWayStr == "True");
 		for (Vertex<T> * vertex : graph.getVertexSet() ){
 			for( pair<long long int , Edge<T> *> p : vertex->getAdjacent() )
 				if (p.second->getID() == edgeID){
