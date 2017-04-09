@@ -100,6 +100,7 @@ class Edge {
 
 	string name_mask;
 	int graph_ID;
+	bool is_path  = false;
 public:
 	Edge(Vertex<T> *d, T id, int w) :
 		dest(d), weight(w), ID(id), max_number_cars(rand() % 75 + 25), isTwoWays(true), is_cut(false) { }
@@ -108,7 +109,9 @@ public:
 	inline void cutRoad() {is_cut = true;}
 	inline bool isFull() const {return this->curr_number_cars == this->max_number_cars;}
 	inline bool isCut() const {return is_cut;}
+	inline bool isPath() const {return this->is_path;}
 
+	inline void setPath(bool p) {this->is_path = p;}
 	inline void setName(string s) {streetName = s;}
 	inline void setNameMask(string s) {name_mask = s;}
 	inline void setTwoWays(bool b) {isTwoWays = b;}
@@ -240,8 +243,8 @@ void Graph<T>::initializeGraphViewer(GraphViewer *gv) const {
 		pair<int, int> position = calculatePosition(node);
 		gv->addNode(node->getIDMask(), position.first, position.second);
 
-		if(node->getIDMask() == 235 || node->getIDMask() == 55)
-			gv->setVertexColor(node->getIDMask(), MAGENTA);
+		if(node->getIDMask() == 1849)
+			gv->setVertexColor(node->getIDMask(), RED);
 	}
 	for (Vertex<T> * node : this->vertexSet) {
 		for (pair<long long int, Edge<T>* > p : node->getAdjacent()) {
@@ -268,7 +271,12 @@ void Graph<T>::updateGraphViewer( GraphViewer *gv) const{
 			Edge<T> * edge = p.second;
 			string label = ( edge->getNameMask() + " " + to_string(edge->curr_number_cars) + "/" + to_string(edge->getMaxCars()) + " " + to_string(edge->getWeight()) + "m. ");
 			gv->setEdgeLabel(edge->getGraphID(), label);
-			if (edge->isFull())
+			if (edge->isPath()){
+				gv->setEdgeThickness(edge->getGraphID(),12);
+				gv->setEdgeColor(edge->getGraphID(),YELLOW);
+				edge->setPath(false);
+			}
+			else if (edge->isFull())
 				gv->setEdgeColor(edge->getGraphID() , YELLOW);
 			else if (edge->isCut() ){
 				gv->setVertexColor(edge->dest->getIDMask() , RED);
@@ -276,8 +284,10 @@ void Graph<T>::updateGraphViewer( GraphViewer *gv) const{
 				gv->setEdgeColor( edge->getGraphID() , RED);
 				gv->setEdgeThickness(edge->getGraphID() , 15);
 			}
-			else
+			else{
+				gv->setEdgeColor(edge->getGraphID(),GREEN);
 				gv->setEdgeThickness(edge->getGraphID() , (((double)edge->curr_number_cars)/((double)edge->max_number_cars))*10 + 1 );
+			}
 
 		}
 	}
@@ -300,6 +310,7 @@ void Graph<T>::updatePath( Vertex<T> *v){
 	while( src != NULL){
 		Edge<T> * edge = src->adjacent[dest->id_mask];
 		edge->curr_number_cars++;
+		edge->setPath(true);
 		cout << src->getIDMask() << " <- ";
 		dest->path = NULL;
 		dest = src;
