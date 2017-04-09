@@ -10,14 +10,17 @@ using namespace std;
 
 template<class T>
 void  carsMovingMenu( Graph<T> &graph , Vertex<T> *sourc , GraphViewer *gv, unsigned long int &n_nodes){
-	cout << "Generating alternatives each second or character inserted \n";
+	bool run_all = false;
+	cout << "Generating alternatives at character inserted \n";
 	for (Vertex<T> *dest : graph.getCarsDest() ){
 		cout << "Generating for " << sourc->getIDMask() << " -> " << dest->getIDMask();
 		//wait either 1 second or less if user inputs something
 		std::chrono::high_resolution_clock::time_point current = std::chrono::high_resolution_clock::now();
-		//while ( (std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - current).count() < 1) && cin.peek() == EOF ){}	
-		if (cin.peek() != EOF)
-			cin.get();
+		if(!run_all){
+			if (cin.peek() != EOF)
+				cin.get();
+		}
+		
 		current = std::chrono::high_resolution_clock::now();
 		graph.Astar(sourc,dest,n_nodes);
 		cout << "	A* took " << std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - current).count() << "s \n";
@@ -45,7 +48,6 @@ bool menu(Graph<T> &graph, GraphViewer *gv){
 		if(option == 1){
 			string streetName = getStreetName();
 			Vertex<T> * v = graph.cutStreet(streetName,n_nodes);
-			cout << "N Nodes = " << n_nodes << "\n";
 			if ( v != NULL){
 				graph.updateGraphViewer(gv);
 				carsMovingMenu(graph,v,gv,n_nodes);

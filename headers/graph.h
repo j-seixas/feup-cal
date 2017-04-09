@@ -270,19 +270,17 @@ void Graph<T>::updateGraphViewer( GraphViewer *gv) const{
 			gv->setEdgeLabel(edge->getGraphID(), label);
 			if (edge->isPath()){
 				gv->setEdgeThickness(edge->getGraphID(),12);
-				gv->setEdgeColor(edge->getGraphID(),YELLOW);
+				gv->setEdgeColor(edge->getGraphID(),ORANGE);
 				edge->setPath(false);
 			}
-			else if (edge->isFull())
-				gv->setEdgeColor(edge->getGraphID() , YELLOW);
 			else if (edge->isCut() ){
 				gv->setVertexColor(edge->dest->getIDMask() , RED);
-				gv->setVertexColor(node->getIDMask() , RED);
+				gv->setVertexColor(node->getIDMask() , ORANGE);
 				gv->setEdgeColor( edge->getGraphID() , RED);
 				gv->setEdgeThickness(edge->getGraphID() , 15);
 			}
 			else{
-				gv->setEdgeColor(edge->getGraphID(),GREEN);
+				gv->setEdgeColor(edge->getGraphID(), ( edge->isFull() ) ? YELLOW : GREEN);
 				gv->setEdgeThickness(edge->getGraphID() , (((double)edge->curr_number_cars)/((double)edge->max_number_cars))*10 + 1 );
 			}
 
@@ -303,12 +301,10 @@ template<class T>
 void Graph<T>::updatePath( Vertex<T> *v){
 	Vertex<T> *src = v->path;
 	Vertex<T> *dest = v;
-	cout << dest->getIDMask() << " <- ";
 	while( src != NULL){
 		Edge<T> * edge = src->adjacent[dest->id_mask];
 		edge->curr_number_cars++;
 		edge->setPath(true);
-		cout << src->getIDMask() << " <- ";
 		dest->path = NULL;
 		dest = src;
 		src = src->path;
