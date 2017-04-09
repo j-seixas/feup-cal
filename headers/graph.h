@@ -43,6 +43,7 @@ class Vertex {
 	bool resolved = false;
 	bool visited = false;
 	bool reachable = true;
+	bool process = false;
 public:
 	Vertex(T in, double latRad, double longRad) : 
 		ID(in), latitudeRadians(latRad), longitudeRadians(longRad), dist(0) , path(NULL){};
@@ -243,6 +244,8 @@ void Graph<T>::updateGraphViewer( GraphViewer *gv) const{
 	for (Vertex<T> * node : this->vertexSet){
 		for (pair<long long int , Edge<T> *> p : node->adjacent){
 			Edge<T> * edge = p.second;
+			string label = ( edge->getNameMask() + " " + to_string(edge->curr_number_cars) + "/" + to_string(edge->getMaxCars()) + " " + to_string(edge->getWeight()) + "m. ");
+			gv->setEdgeLabel(edge->getGraphID(), label);
 			if (edge->isFull())
 				gv->setEdgeColor(edge->getGraphID() , YELLOW);
 			else if (edge->isCut() ){
@@ -270,13 +273,16 @@ template<class T>
 void Graph<T>::updatePath( Vertex<T> *v){
 	Vertex<T> *src = v->path;
 	Vertex<T> *dest = v;
+	cout << dest->getIDMask() << " <- ";
 	while( src != NULL){
 		Edge<T> * edge = src->adjacent[dest->id_mask];
 		edge->curr_number_cars++;
+		cout << src->getIDMask() << " <- ";
 		dest->path = NULL;
 		dest = src;
 		src = src->path;
 	}
+	cout << endl;
 }
 
 template<class T>
@@ -307,8 +313,9 @@ void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest) {
 	for (Vertex<T> * v : this->vertexSet) {
 		v->path = NULL;
 		v->dist = INT_INFINITY;
+		v->process = false;
 	}
-	const unsigned int MAX_EXPLORE_NODES = this->vertexSet.size() * 0.80;
+	const unsigned int MAX_EXPLORE_NODES = this->vertexSet.size();
 	sourc->dist = 0;
 	list<Vertex<T> > closed_list;
 	vector<Vertex<T> > open_list;
@@ -322,10 +329,11 @@ void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest) {
 		make_heap( open_list.begin() , open_list.end() , [] (Vertex<T> v1 , Vertex<T> v2) { return v1.getDist() > v2.getDist(); } );
 		Vertex<T> curr = open_list.front();  
 		open_list.erase(open_list.begin());
-		
+		cout << curr.getIDMask() << "->";
 		for ( pair<long long int,Edge<T>*> p : curr.adjacent){
 			Edge<T> *edge = p.second;
 			Vertex<T> *adjacent = edge->dest;
+
 			if (edge->curr_number_cars == edge->max_number_cars || edge->isCut()) //ignore if street full
 				continue;
 			if (adjacent->getIDMask() == dest->getIDMask()){
@@ -333,21 +341,24 @@ void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest) {
 				cout << "	A* explored " << closed_list.size() << " nodes\n";
 				return;
 			}
-			
 			adjacent->dist = curr.dist + edge->weight + calculateDistance(adjacent,dest);
+
 			for (Vertex<T> temp : open_list)
 				if ((temp.getIDMask() == adjacent->getIDMask()) && (temp.dist <= adjacent->dist))
 					continue;
-			
 			for (Vertex<T> temp : closed_list)
 				if ((temp.getIDMask() == adjacent->getIDMask()) && (temp.dist <= adjacent->dist))
 					continue;
-				
-			
+
 			open_list.push_back(*adjacent);
 			adjacent->path = *(this->vertexSet.find(&curr));
 		}
-		closed_list.push_back(curr);
+		Vertex<T> * real_node = *(this->vertexSet.find(&curr));
+		if ( !real_node->process ){
+			real_node->process = true;
+			closed_list.push_back(curr);
+		}
+		
 	}
 	cout << "	A* explored " << closed_list.size() << " nodes\n";
 }

@@ -12,7 +12,7 @@ template<class T>
 void  carsMovingMenu( Graph<T> &graph , Vertex<T> *sourc , GraphViewer *gv){
 	cout << "Generating alternatives each second or character inserted \n";
 	for (Vertex<T> *dest : graph.getCarsDest() ){
-		cout << "Generating for " << sourc->getIDMask() << " -> " << dest->getIDMask() << " \n";
+		cout << "Generating for " << sourc->getIDMask() << " -> " << dest->getIDMask();
 		//wait either 1 second or less if user inputs something
 		std::chrono::high_resolution_clock::time_point current = std::chrono::high_resolution_clock::now();
 		//while ( (std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - current).count() < 1) && cin.peek() == EOF ){}	
@@ -23,9 +23,6 @@ void  carsMovingMenu( Graph<T> &graph , Vertex<T> *sourc , GraphViewer *gv){
 		cout << "	A* took " << std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - current).count() << "s \n";
 		if (dest->path != NULL){
 			dest->setResolved(true);
-			for (Vertex<T> * v : dest->backtrace() )
-				cout << v->getIDMask() << "->";
-			cout << "\n";
 			graph.updatePath(dest);
 		}
 		else{
