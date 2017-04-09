@@ -353,54 +353,74 @@ void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest, const unsigned long int 
 		v->path = NULL; v->dist = INT_INFINITY; v->process = false;
 	}
 	sourc->dist = 0;
-	list<Vertex<T> > closed_list;
-	vector<Vertex<T> > open_list;
-	open_list.push_back(*sourc);
+	list<Vertex<T> *> closed_list;
+	vector<Vertex<T> *> open_list;
+	open_list.push_back(sourc);
+
 	while ( !open_list.empty() ){
+		make_heap( open_list.begin() , open_list.end() , [] (Vertex<T> *v1 , Vertex<T> *v2) { return v1->getDist() > v2->getDist(); } );
+		/*
+		cout << "[";
+		for (Vertex<T> *v : open_list)
+			cout << v->id_mask << ", ";
+		cout << "]\n[";
+		for (Vertex<T> *v : closed_list)
+			cout << v->id_mask << ", ";
+		cout << "] NODES = " << closed_list.size() << endl;
+		*/
+		Vertex<T> *curr = open_list.front();  
+		open_list.erase(open_list.begin());
+
+		if (curr->getIDMask() == dest->getIDMask()){ //Here to guarantee optimal path
+			cout << "	!SUCESS!	\n";
+			cout << "	A* explored " << closed_list.size() << " nodes\n";
+			return;
+		}
+		
+		for ( pair<long long int,Edge<T>*> p : curr->adjacent){
+			Edge<T> *edge = p.second;  Vertex<T> *adjacent = edge->dest;
+
+			if (edge->curr_number_cars == edge->max_number_cars || edge->isCut()) //ignore if street full
+				continue;
+
+			adjacent->dist = curr->dist + edge->weight + //G
+							 calculateDistance(adjacent,dest); //H
+
+			auto o_it = open_list.begin();
+			for ( ; o_it != open_list.end() ; o_it++)
+				if ( (*o_it)->id_mask == adjacent->id_mask ){
+					if ( (*o_it)->dist <= adjacent->dist)
+						continue;
+					else{
+						(*o_it)->dist = adjacent->dist;
+						(*o_it)->path = curr;
+						break;
+					}
+				}
+
+			for (Vertex<T> *temp : closed_list)
+				if ((temp->id_mask == adjacent->id_mask) && (temp->dist <= adjacent->dist))
+					continue;
+
+			if( o_it == open_list.end()){ //node not in open_list
+				open_list.push_back( adjacent );
+				adjacent->path = curr;
+			}
+
+			 //*(this->vertexSet.find(&curr));
+			//adjacent->path = curr;
+		}
+
+		//Vertex<T> * real_node = *(this->vertexSet.find(&curr));
+		if ( !curr->process){ //!real_node->process ){
+			curr->process = true; //real_node->process = true;
+			closed_list.push_back(curr);
+		}
 		if(closed_list.size() >= NODES_LIMIT ){ //if no path was found
 			dest->path = NULL;
 			cout << "	A* explored " << closed_list.size() << " nodes\n";
 			return;
 		}
-
-		make_heap( open_list.begin() , open_list.end() , [] (Vertex<T> v1 , Vertex<T> v2) { return v1.getDist() > v2.getDist(); } );
-		cout << "[";
-		for (Vertex<T> v : open_list)
-			cout << v.getIDMask() << ", ";
-		cout << "]\n";
-		Vertex<T> curr = open_list.front();  
-		pop_heap(open_list.begin() , open_list.end() , [] (Vertex<T> v1 , Vertex<T> v2) { return v1.getDist() > v2.getDist(); } );
-		open_list.pop_back();
-		//cout << closed_list.size() << "\n";
-		for ( pair<long long int,Edge<T>*> p : curr.adjacent){
-			Edge<T> *edge = p.second;
-			Vertex<T> *adjacent = edge->dest;
-
-			if (edge->curr_number_cars == edge->max_number_cars || edge->isCut()) //ignore if street full
-				continue;
-			if (adjacent->getIDMask() == dest->getIDMask()){
-				adjacent->path = *(this->vertexSet.find(&curr));
-				cout << "	A* explored " << closed_list.size() << " nodes\n";
-				return;
-			}
-			adjacent->dist = curr.dist + edge->weight + calculateDistance(adjacent,dest);
-
-			for (Vertex<T> temp : open_list)
-				if ((temp.getIDMask() == adjacent->getIDMask()) && (temp.dist <= adjacent->dist))
-					continue;
-			for (Vertex<T> temp : closed_list)
-				if ((temp.getIDMask() == adjacent->getIDMask()) && (temp.dist <= adjacent->dist))
-					continue;
-
-			open_list.push_back(*adjacent);
-			adjacent->path = *(this->vertexSet.find(&curr));
-		}
-		Vertex<T> * real_node = *(this->vertexSet.find(&curr));
-		if ( !real_node->process ){
-			real_node->process = true;
-			closed_list.push_back(curr);
-		}
-		
 	}
 	cout << "	A* explored " << closed_list.size() << " nodes\n";
 }
