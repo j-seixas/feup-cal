@@ -242,9 +242,6 @@ void Graph<T>::initializeGraphViewer(GraphViewer *gv) const {
 	for (Vertex<T> * node : this->vertexSet){
 		pair<int, int> position = calculatePosition(node);
 		gv->addNode(node->getIDMask(), position.first, position.second);
-
-		if(node->getIDMask() == 1849)
-			gv->setVertexColor(node->getIDMask(), RED);
 	}
 	for (Vertex<T> * node : this->vertexSet) {
 		for (pair<long long int, Edge<T>* > p : node->getAdjacent()) {
@@ -360,6 +357,7 @@ Vertex<T>* Graph<T>::getVertexByIDMask(long long int id) const {
 
 template<class T>
 void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest, const unsigned long int NODES_LIMIT) {
+	bool ignore = false;
 	for (Vertex<T> * v : this->vertexSet) {
 		v->path = NULL; v->dist = INT_INFINITY; v->process = false;
 	}
@@ -370,62 +368,58 @@ void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest, const unsigned long int 
 
 	while ( !open_list.empty() ){
 		make_heap( open_list.begin() , open_list.end() , [] (Vertex<T> *v1 , Vertex<T> *v2) { return v1->getDist() > v2->getDist(); } );
-		/*
-		cout << "[";
-		for (Vertex<T> *v : open_list)
-			cout << v->id_mask << ", ";
-		cout << "]\n[";
-		for (Vertex<T> *v : closed_list)
-			cout << v->id_mask << ", ";
-		cout << "] NODES = " << closed_list.size() << endl;
-		*/
-		Vertex<T> *curr = open_list.front();  
+		Vertex<T> curr = *(open_list.front()) , *curr_ptr = open_list.front();  
 		open_list.erase(open_list.begin());
-
-		if (curr->getIDMask() == dest->getIDMask()){ //Here to guarantee optimal path
+		cout << "V = " << curr.id_mask << endl;
+		if (curr.id_mask == dest->id_mask){ //Here to guarantee optimal path
 			cout << "	!SUCESS!	\n";
 			cout << "	A* explored " << closed_list.size() << " nodes\n";
 			return;
 		}
 		
-		for ( pair<long long int,Edge<T>*> p : curr->adjacent){
+		for ( pair<long long int,Edge<T>*> p : curr.adjacent){
 			Edge<T> *edge = p.second;  Vertex<T> *adjacent = edge->dest;
-
+			cout << "	ADJ = " << adjacent->id_mask << endl;
 			if (edge->curr_number_cars == edge->max_number_cars || edge->isCut()) //ignore if street full
 				continue;
 
-			adjacent->dist = curr->dist + edge->weight + //G
+			int dist = curr_ptr->dist + edge->weight + //G
 							 calculateDistance(adjacent,dest); //H
-
+			cout << "		total = " << dist << ", prev = " << curr_ptr->dist << ", edge = " << edge->weight << ", H = " << calculateDistance(adjacent,dest) << endl;
 			auto o_it = open_list.begin();
 			for ( ; o_it != open_list.end() ; o_it++)
-				if ( (*o_it)->id_mask == adjacent->id_mask ){
-					if ( (*o_it)->dist <= adjacent->dist)
-						continue;
-					else{
-						(*o_it)->dist = adjacent->dist;
-						(*o_it)->path = curr;
+				if ( (*o_it)->id_mask == adjacent->id_mask ){ //if vertex is in open list
+					if ( (*o_it)->dist <= dist){
+						ignore = true;
+						break;
+					}
+					else{ //current path better than the one in openlist
+						cout << "		Prev d = " << (*o_it)->dist << ", after = " << dist << endl;
+						cout << "		prev path = " << (*o_it)->path->id_mask << ", after = " << curr_ptr->id_mask << endl;
+						(*o_it)->dist = dist;
+						(*o_it)->path = curr_ptr;
+						//(*this->vertexSet.find( &(*o_it) ))->path = (*this->vertexSet.find( &curr ));
 						break;
 					}
 				}
+			if ( ignore ){ ignore = false; continue; }
 
 			for (Vertex<T> *temp : closed_list)
-				if ((temp->id_mask == adjacent->id_mask) && (temp->dist <= adjacent->dist))
-					continue;
+				if ((temp->id_mask == adjacent->id_mask) && (temp->dist <= dist)){
+					ignore = true;
+					break;
+				}
+			if ( ignore ){ ignore = false; continue; }
 
 			if( o_it == open_list.end()){ //node not in open_list
+				adjacent->dist = dist;
 				open_list.push_back( adjacent );
-				adjacent->path = curr;
+				adjacent->path = curr_ptr;
 			}
-
-			 //*(this->vertexSet.find(&curr));
-			//adjacent->path = curr;
 		}
-
-		//Vertex<T> * real_node = *(this->vertexSet.find(&curr));
-		if ( !curr->process){ //!real_node->process ){
-			curr->process = true; //real_node->process = true;
-			closed_list.push_back(curr);
+		if ( !curr.process){ //if node not yet processed add to closed list 
+			curr.process = true; 
+			closed_list.push_back(curr_ptr);
 		}
 		if(closed_list.size() >= NODES_LIMIT ){ //if no path was found
 			dest->path = NULL;
