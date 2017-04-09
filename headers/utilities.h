@@ -138,6 +138,7 @@ void loadStreets(Graph<T> &graph) {
 		string streetName, isTwoWaysStr;
 		bool isTwoWays;
 		char delimiter;
+		string isTwoWayStr;
 		istringstream iss(line);
 		iss >> edgeID >> delimiter;
 		getline(iss, streetName, delimiter);
