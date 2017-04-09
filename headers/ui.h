@@ -38,11 +38,11 @@ bool menu(Graph<T> &graph, GraphViewer *gv){
 	unsigned long int n_nodes = 0;
 	cout << "Menu" << endl
 		 << "  1. Cut road" << endl
-		 << "  2. Update" << endl
+		 << "  2. Reset" << endl
 		 << "  0. Exit" << endl;
 		uint16 option = getInput();
 		cout << endl;
-		if(option == 1){
+		if(option == 1) {
 			string streetName = getStreetName();
 			Vertex<T> * v = graph.cutStreet(streetName,n_nodes);
 			cout << "N Nodes = " << n_nodes << "\n";
@@ -51,6 +51,9 @@ bool menu(Graph<T> &graph, GraphViewer *gv){
 				carsMovingMenu(graph,v,gv,n_nodes);
 			}
 			graph.show_name = true;
+			return true;
+		} else if(option == 2) {
+			graph.reset();
 			return true;
 		}
 

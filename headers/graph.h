@@ -178,6 +178,7 @@ public:
 	void initDestinations();
 	void initializeGraphViewer(GraphViewer *gv) const;
 	void updateGraphViewer(GraphViewer *gv) const;
+	void reset();
 };
 
 /**
@@ -232,6 +233,29 @@ Vertex<T> * Graph<T>::cutStreet(string streetName, unsigned long int &n_nodes) {
 }
 
 /**
+	@brief Resets the graph to its original state
+	@detail Time Complexity O(V+E) , Space Complexity O(1)
+*/
+template<class T>
+void Graph<T>::reset(){
+	this->cars_destination.clear();
+	for (Vertex<T> * vertex : this->vertexSet) {
+		vertex->dist = INT_MAX;
+		vertex->resolved = false;
+		vertex->visited = false;
+		vertex->reachable = true;
+		vertex->process = false;
+		vertex->path = nullptr;
+		for(pair<long long int , Edge<T>* > p : vertex->adjacent){
+			Edge<T> * edge = p.second;
+			edge->is_cut = false;
+			edge->is_path = false;
+			edge->curr_number_cars = 0;
+		}
+	}
+}
+
+/**
 	@brief Initializes the nodes and edges of the Graph
 	@param gv Pointer to the graphviewer
 	@detail Time Complexity O( (V^2) + E) , Space Complexity O(1)
@@ -264,6 +288,7 @@ void Graph<T>::initializeGraphViewer(GraphViewer *gv) const {
 template<class T>
 void Graph<T>::updateGraphViewer( GraphViewer *gv) const{
 	for (Vertex<T> * node : this->vertexSet){
+		gv->setVertexColor(node->id_mask, WHITE);
 		for (pair<long long int , Edge<T> *> p : node->adjacent){
 			Edge<T> * edge = p.second;
 			string label = ( edge->getNameMask() + " " + to_string(edge->curr_number_cars) + "/" + to_string(edge->getMaxCars()) + " " + to_string(edge->getWeight()) + "m. ");
