@@ -141,8 +141,14 @@ void loadStreets(Graph<T> &graph) {
 		istringstream iss(line);
 		iss >> edgeID >> delimiter;
 		getline(iss, streetName, delimiter);
-		getline(iss, isTwoWaysStr);
-		isTwoWays = (isTwoWaysStr == "True");
+		getline(iss, isTwoWaysStr, '\n');
+		cout << "|True| , input = |" << isTwoWaysStr << "CONA|\n";
+		if (strcmp(isTwoWaysStr.c_str(),"True") == 0)
+			isTwoWays = true;
+		else
+			isTwoWays = false;
+		
+		//cout << isTwoWays << endl;
 		for (Vertex<T> * vertex : graph.getVertexSet() ){
 			for( pair<long long int , Edge<T> *> p : vertex->getAdjacent() )
 				if (p.second->getID() == edgeID){
@@ -151,8 +157,9 @@ void loadStreets(Graph<T> &graph) {
 					ed->setNameMask( nextStreetName() );
 					ed->setTwoWays(isTwoWays);
 					if (isTwoWays) {
+						cout << "TWO WAYS\n";
 						//If it's two ways, create another edge which is the opposite of the original and so is its ID.
-						Edge<T>* oppositeEdge = new Edge<T>(vertex, -1 * ed->getID(), calculateDistance(vertex, ed->getDest()));
+						Edge<T>* oppositeEdge = new Edge<T>(vertex, (-1 * ed->getID()), calculateDistance(vertex, ed->getDest()));
 						oppositeEdge->setName(streetName);
 						oppositeEdge->setNameMask(nextStreetName());
 						ed->getDest()->addEdge(oppositeEdge);

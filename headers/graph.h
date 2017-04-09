@@ -29,7 +29,10 @@ const int INT_INFINITY = INT_MAX;
 	@var longitudeRadians Longitude of the vertex
 	@var adjacent Hash map where key is id_mask of destination Vertex, value is the Edge
 	@var dist Used for the A* algorithm
+	@var resolved Whether the vertex was already solved or not (used for graphviewer purposes) if(resolved) color=ORANGE
 	@var visited Used for the dfs like visit
+	@var reachable Whether the vertex is reachable from the start node or not (start node is the origin node of cut edge)
+	@var process Used for the A* algorithm, if vertex was processed it is in the closed list
  */
 template<class T>
 class Vertex {
@@ -63,30 +66,26 @@ public:
 	inline void setResolved(bool res) {this->resolved = res;}
 	inline void setInfo(T id) { ID = id; }
 	inline void setMaskID(long long int mask) { id_mask = mask; }
-	list<Vertex<T> *> backtrace();
 
 	Vertex* path;
 
 	friend class Graph<T> ;
 };
 
-template <class T>
-list<Vertex<T> *> Vertex<T>::backtrace(){
-	list<Vertex<T> *> temp;
-	Vertex<T> * curr = this->path;
-	temp.push_front(this);
-	while (curr != NULL){
-		temp.push_front(curr);
-		curr = curr->path;
-	}
-
-	return temp;
-}
-
-/* ================================================================================================
- * Class Edge
- * ================================================================================================
- */
+/**
+	@brief Class Edge (represents a road)
+	@var dest Vertex to which the Edge points
+	@var weight Length of the road (in m)
+	@var ID Unique ID of the Edge
+	@var max_number_cars Maximum number of cars allowed to traverse this road
+	@var curr_number_cars Current number of cars traversing this road
+	@var streetName Name of the street
+	@var isTwoWays Whether the road is two ways or not
+	@var is_cut Whether the road is cut or not (if a road is cut it cannor be traversed)
+	@var name_mask Mask used to easily reference the Edge
+	@var graph_ID ID of this Edge in the graphviewer
+	@var is_path Whether this edge is a path to some destination or not (used for graphviewer purposes)
+*/
 template<class T>
 class Edge {
 	Vertex<T> * dest;
@@ -132,10 +131,6 @@ public:
 	friend class Vertex<T> ;
 };
 
-/* ================================================================================================
- * Class Graph
- * ================================================================================================
- */
 struct hashFuncs{
 	template<class T>
 	size_t operator()(const Vertex<T> *v) const{
@@ -146,7 +141,12 @@ struct hashFuncs{
 		return v1->getIDMask() == v2->getIDMask();
 	}
 };
-
+/**
+	@brief Graph class, represents a map
+	@var vertexSet All vertexes of the graph
+	@var cars_destination List which represents the various cars in the closed road
+	@var counter Used to give a unique id_mask to vertexes
+*/
 template<class T>
 class Graph {
 	unordered_set<Vertex<T> *,hashFuncs,hashFuncs> vertexSet;
@@ -165,7 +165,6 @@ public:
 	inline int getNumVertex() const {return this->vertexSet.size();}
 	inline unsigned long int getCounter() const {return this->counter;}
 	inline list<Vertex<T> *> &getCarsDest() {return this->cars_destination;}
-	Vertex<T>* getVertexByID(const T &v) const;
 	Vertex<T>* getVertexByIDMask(long long int id) const;
 
 
@@ -178,7 +177,7 @@ public:
 	void initDestinations();
 	void initializeGraphViewer(GraphViewer *gv) const;
 	void updateGraphViewer(GraphViewer *gv) const;
-	void reset();
+	void resetGraph();
 };
 
 /**
@@ -237,7 +236,7 @@ Vertex<T> * Graph<T>::cutStreet(string streetName, unsigned long int &n_nodes) {
 	@detail Time Complexity O(V+E) , Space Complexity O(1)
 */
 template<class T>
-void Graph<T>::reset(){
+void Graph<T>::resetGraph(){
 	this->cars_destination.clear();
 	for (Vertex<T> * vertex : this->vertexSet) {
 		vertex->dist = INT_MAX;
@@ -274,6 +273,8 @@ void Graph<T>::initializeGraphViewer(GraphViewer *gv) const {
 			gv->setEdgeLabel(ID, label);
 			gv->setEdgeThickness(ID,1);
 			p.second->setGraphID(ID);
+			if( p.second->ID < 0)
+				cout << "Edge " << p.second->name_mask << ", negative\n";
 			ID++;
 		}
 	}
@@ -350,23 +351,9 @@ void Graph<T>::addVertex(Vertex<T> *v) {
 
 /**
 	@brief Gets the designated vertex
-	@param id iID of the vertex
-	@return Vertex specified
-	@detail Time Complexity O(V) , Space Complexity O(1);
-*/
-template <class T>
-Vertex<T>* Graph<T>::getVertexByID(const T &v) const {
-	for(Vertex<T> * vertex : this->vertexSet)
-		if (vertex->getID() == v) 
-			return vertex;
-	return nullptr;
-}
-
-/**
-	@brief Gets the designated vertex
 	@param id id_mask of the vertex
 	@return Vertex specified
-	@detail Time Complexity O(1) , Space Complexity O(1);
+	@detail Time Complexity O(1) , Space Complexity O(1)
 */
 template <class T>
 Vertex<T>* Graph<T>::getVertexByIDMask(long long int id) const {
@@ -376,6 +363,15 @@ Vertex<T>* Graph<T>::getVertexByIDMask(long long int id) const {
 	return *ret;
 }
 
+/**
+	@brief Searches the graph for a path using A*
+	@param sourc Pointer to start node
+	@param dest Pointer to end node
+	@param NODES_LIMIT Limits the number of nodes to explore (should be equal to number of nodes reachable from start)
+	@detail Time Complexity O( (V+E)*log(V) ), Space Complexity ( 2*V )
+	@detail Algorithm based on http://web.mit.edu/eranki/www/tutorials/search/
+	@detail Time Complexity based on https://stackoverflow.com/questions/11070248/a-time-complexity#comment41548859_11070326
+*/
 template<class T>
 void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest, const unsigned long int NODES_LIMIT) {
 	bool ignore = false;

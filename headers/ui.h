@@ -15,8 +15,6 @@ void  carsMovingMenu( Graph<T> &graph , Vertex<T> *sourc , GraphViewer *gv, unsi
 	cout << "Generating alternatives at character inserted \n";
 	for (Vertex<T> *dest : graph.getCarsDest() ){
 		cout << "Generating for " << sourc->getIDMask() << " -> " << dest->getIDMask();
-		//wait either 1 second or less if user inputs something
-		std::chrono::high_resolution_clock::time_point current = std::chrono::high_resolution_clock::now();
 		if(!run_all){
 			if (cin.peek() != EOF)
 				cin.get( chr );
@@ -24,7 +22,7 @@ void  carsMovingMenu( Graph<T> &graph , Vertex<T> *sourc , GraphViewer *gv, unsi
 				run_all = true;
 		}
 		
-		current = std::chrono::high_resolution_clock::now();
+		std::chrono::high_resolution_clock::time_point current = std::chrono::high_resolution_clock::now();
 		graph.Astar(sourc,dest,n_nodes);
 		cout << "	A* took " << std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - current).count() << "s \n";
 		if (dest->path != NULL){
@@ -58,7 +56,7 @@ bool menu(Graph<T> &graph, GraphViewer *gv){
 			graph.show_name = true;
 			return true;
 		} else if(option == 2) {
-			graph.reset();
+			graph.resetGraph();
 			return true;
 		}
 
