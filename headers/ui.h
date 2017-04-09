@@ -16,15 +16,22 @@ void  carsMovingMenu( Graph<T> &graph , Vertex<T> *sourc , GraphViewer *gv){
 		//wait either 1 second or less if user inputs something
 		std::chrono::high_resolution_clock::time_point current = std::chrono::high_resolution_clock::now();
 		//while ( (std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - current).count() < 1) && cin.peek() == EOF ){}	
-		//if (cin.peek() != EOF)
-		//	cin.get();
+		if (cin.peek() != EOF)
+			cin.get();
 		current = std::chrono::high_resolution_clock::now();
 		graph.Astar(sourc,dest);
-		cout << "A* took " << std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - current).count() << "s \n";
-		if (dest->path != NULL)
+		cout << "	A* took " << std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - current).count() << "s \n";
+		if (dest->path != NULL){
+			dest->setResolved(true);
+			for (Vertex<T> * v : dest->backtrace() )
+				cout << v->getIDMask() << "->";
+			cout << "\n";
 			graph.updatePath(dest);
-		else
+		}
+		else{
+			dest->setReachable(false);
 			cout << "No path found for " << sourc->getIDMask() << " -> " << dest->getIDMask() << "\n"; 
+		}
 		graph.updateGraphViewer(gv);
 	}
 }
@@ -40,8 +47,10 @@ bool menu(Graph<T> &graph, GraphViewer *gv){
 		if(option == 1){
 			string streetName = getStreetName();
 			Vertex<T> * v = graph.cutStreet(streetName);
-			if ( v != NULL)
+			if ( v != NULL){
+				graph.updateGraphViewer(gv);
 				carsMovingMenu(graph,v,gv);
+			}
 			graph.show_name = true;
 			return true;
 		}

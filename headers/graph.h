@@ -40,7 +40,9 @@ class Vertex {
 	unordered_map<long long int,Edge<T>* > adjacent;
 
 	int dist;
+	bool resolved = false;
 	bool visited = false;
+	bool reachable = true;
 public:
 	Vertex(T in, double latRad, double longRad) : 
 		ID(in), latitudeRadians(latRad), longitudeRadians(longRad), dist(0) , path(NULL){};
@@ -54,8 +56,10 @@ public:
 	inline double getLongitude() const { return longitudeRadians; }
 	inline unordered_map<long long int,Edge<T>*> &getAdjacent() { return adjacent; }
 	inline int getDist() const { return dist; }
+	inline bool getReachable() const {return this->reachable;}
 
-
+	inline void setReachable(bool r) {this->reachable = r;}
+	inline void setResolved(bool res) {this->resolved = res;}
 	inline void setInfo(T id) { ID = id; }
 	inline void setMaskID(long long int mask) { id_mask = mask; }
 	list<Vertex<T> *> backtrace();
@@ -94,9 +98,10 @@ class Edge {
 	bool is_cut;
 
 	string name_mask;
+	int graph_ID;
 public:
 	Edge(Vertex<T> *d, T id, int w) :
-		dest(d), weight(w), ID(id), max_number_cars(rand() % 100 + 25), isTwoWays(true), is_cut(false) { }
+		dest(d), weight(w), ID(id), max_number_cars(rand() % 75 + 25), isTwoWays(true), is_cut(false) { }
 	Edge() : dest(NULL), weight(0) , ID(0) , max_number_cars(0){};
 
 	inline void cutRoad() {is_cut = true;}
@@ -106,7 +111,9 @@ public:
 	inline void setName(string s) {streetName = s;}
 	inline void setNameMask(string s) {name_mask = s;}
 	inline void setTwoWays(bool b) {isTwoWays = b;}
+	inline void setGraphID(int x) {this->graph_ID = x;}
 
+	inline int getGraphID() {return this->graph_ID;}
 	inline T getID() const {return ID;}
 	inline string getName() const {return this->streetName;}
 	inline bool getTwoWays() const {return this->isTwoWays;}
@@ -165,6 +172,7 @@ public:
 	bool moveCar(Edge<T> &from, long long int &car, Edge<T> &to);
 	Vertex<T> * cutStreet(string streetName);
 	void initDestinations();
+	void initializeGraphViewer(GraphViewer *gv) const;
 	void updateGraphViewer(GraphViewer *gv) const;
 };
 
@@ -211,28 +219,46 @@ Vertex<T> * Graph<T>::cutStreet(string streetName) {
 }
 
 template<class T>
-void Graph<T>::updateGraphViewer(GraphViewer *gv) const {
+void Graph<T>::initializeGraphViewer(GraphViewer *gv) const {
 	int ID = 0;
-	for (Vertex<T> * it : this->vertexSet) {
-		pair<int, int> position = calculatePosition(it);
-		gv->addNode(it->getIDMask(), position.first, position.second);
+	for (Vertex<T> * node : this->vertexSet){
+		pair<int, int> position = calculatePosition(node);
+		gv->addNode(node->getIDMask(), position.first, position.second);
 	}
-	for (Vertex<T> *v_it : this->vertexSet){
-		for (pair<long long int, Edge<T>* > e_it : v_it->getAdjacent()) {
-			string label = ( (this->show_name) ? (e_it.second->getNameMask() + " ") : "" ) + to_string(e_it.second->curr_number_cars) + "/" + to_string(e_it.second->getMaxCars()) + " " + to_string(e_it.second->getWeight()) + "m. ";
-			gv->addEdge(ID, v_it->getIDMask(), (e_it.second->dest)->getIDMask(), EdgeType::DIRECTED);
+	for (Vertex<T> * node : this->vertexSet) {
+		for (pair<long long int, Edge<T>* > p : node->getAdjacent()) {
+			string label = ( p.second->getNameMask() + " " + to_string(p.second->curr_number_cars) + "/" + to_string(p.second->getMaxCars()) + " " + to_string(p.second->getWeight()) + "m. ");
+			gv->addEdge(ID, node->getIDMask(), (p.second->dest)->getIDMask(), EdgeType::DIRECTED);
 			gv->setEdgeLabel(ID, label);
-			gv->setEdgeThickness(ID, (e_it.second->curr_number_cars/e_it.second->max_number_cars)*10 + 1);
-			if (e_it.second->isFull())
-				gv->setEdgeColor(ID, "yellow");
-			else if (e_it.second->isCut()){
-				gv->setVertexColor(v_it->getIDMask(), "red" );
-				gv->setEdgeColor(ID, "red");
-				gv->setEdgeThickness(ID,15);
-			}
+			gv->setEdgeThickness(ID,1);
+			p.second->setGraphID(ID);
 			ID++;
 		}
 	}
+	gv->rearrange();
+}
+
+template<class T>
+void Graph<T>::updateGraphViewer( GraphViewer *gv) const{
+	for (Vertex<T> * node : this->vertexSet){
+		for (pair<long long int , Edge<T> *> p : node->adjacent){
+			Edge<T> * edge = p.second;
+			if (edge->isFull())
+				gv->setEdgeColor(edge->getGraphID() , YELLOW);
+			else if (edge->isCut() ){
+				gv->setVertexColor(edge->dest->getIDMask() , RED);
+				gv->setVertexColor(node->getIDMask() , RED);
+				gv->setEdgeColor( edge->getGraphID() , RED);
+				gv->setEdgeThickness(edge->getGraphID() , 15);
+			}
+			else
+				gv->setEdgeThickness(edge->getGraphID() , (((double)edge->curr_number_cars)/((double)edge->max_number_cars))*10 + 1 );
+
+		}
+	}
+	for (Vertex<T> * v : this->cars_destination)
+		gv->setVertexColor(v->getIDMask() , ((v->resolved) ? ORANGE : ((v->reachable) ? BLUE : RED) ) );
+
 	gv->rearrange();
 }
 
@@ -282,7 +308,7 @@ void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest) {
 		v->path = NULL;
 		v->dist = INT_INFINITY;
 	}
-	const unsigned int MAX_EXPLORE_NODES = this->vertexSet.size() * 0.75;
+	const unsigned int MAX_EXPLORE_NODES = this->vertexSet.size() * 0.80;
 	sourc->dist = 0;
 	list<Vertex<T> > closed_list;
 	vector<Vertex<T> > open_list;
@@ -290,7 +316,8 @@ void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest) {
 	while ( !open_list.empty() ){
 		if(closed_list.size() >= MAX_EXPLORE_NODES ){ //if no path was found
 			dest->path = NULL;
-			break;
+			cout << "	A* explored " << closed_list.size() << " nodes\n";
+			return;
 		}
 		make_heap( open_list.begin() , open_list.end() , [] (Vertex<T> v1 , Vertex<T> v2) { return v1.getDist() > v2.getDist(); } );
 		Vertex<T> curr = open_list.front();  
@@ -303,7 +330,8 @@ void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest) {
 				continue;
 			if (adjacent->getIDMask() == dest->getIDMask()){
 				adjacent->path = *(this->vertexSet.find(&curr));
-				break;
+				cout << "	A* explored " << closed_list.size() << " nodes\n";
+				return;
 			}
 			
 			adjacent->dist = curr.dist + edge->weight + calculateDistance(adjacent,dest);
@@ -314,6 +342,7 @@ void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest) {
 			for (Vertex<T> temp : closed_list)
 				if ((temp.getIDMask() == adjacent->getIDMask()) && (temp.dist <= adjacent->dist))
 					continue;
+				
 			
 			open_list.push_back(*adjacent);
 			adjacent->path = *(this->vertexSet.find(&curr));

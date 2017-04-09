@@ -16,8 +16,8 @@ void initGraph(Graph<long long int> &graph){
 
 void initGraphViewer(GraphViewer *gv){
 	gv->createWindow(WIDTH, HEIGHT);
-	gv->defineVertexColor("white");
-	gv->defineEdgeColor("green");
+	gv->defineVertexColor(WHITE);
+	gv->defineEdgeColor(GREEN);
 }
 
 void run() {
@@ -26,6 +26,7 @@ void run() {
 	initGraph(graph);
 	GraphViewer *gv = new GraphViewer(WIDTH, HEIGHT, false);
 	initGraphViewer(gv);
+	graph.initializeGraphViewer(gv);
 	do{
 		graph.updateGraphViewer(gv);
 	} while(menu(graph,gv));
