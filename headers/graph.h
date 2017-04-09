@@ -168,10 +168,10 @@ public:
 
 	void updatePath( Vertex<T> *v);
 	void resetAlgorithmVars();
-	void generateCarPaths( Vertex<T> *v);
-	void Astar(Vertex<T> *sourc, Vertex<T> *dest);
+	void generateCarPaths( Vertex<T> *v, unsigned long int &n_nodes);
+	void Astar(Vertex<T> *sourc, Vertex<T> *dest,const unsigned long int NODES_LIMIT);
 	bool moveCar(Edge<T> &from, long long int &car, Edge<T> &to);
-	Vertex<T> * cutStreet(string streetName);
+	Vertex<T> * cutStreet(string streetName, unsigned long int &n_nodes);
 	void initDestinations();
 	void initializeGraphViewer(GraphViewer *gv) const;
 	void updateGraphViewer(GraphViewer *gv) const;
@@ -194,14 +194,14 @@ void Graph<T>::resetAlgorithmVars(){
 	@detail Time Complexity O(V+E) , Space Complexity O(V)
 */
 template <class T>
-void Graph<T>::generateCarPaths(Vertex<T> *v) {
+void Graph<T>::generateCarPaths(Vertex<T> *v, unsigned long int &n_nodes) {
 	v->visited = true;
 	if ( (rand() % 10) == 1 ){
 		this->cars_destination.push_back(v);
 	}
 	for (pair<long long int , Edge<T> *> p : v->adjacent){
 	    if ( p.second->dest->visited == false )
-	    	generateCarPaths(p.second->dest);
+	    	generateCarPaths(p.second->dest , ++n_nodes);
 	}
 }
 
@@ -212,13 +212,13 @@ void Graph<T>::generateCarPaths(Vertex<T> *v) {
 	@detail Time Complexity O(V+E) , Space Complexity O(1)
 */
 template<class T>
-Vertex<T> * Graph<T>::cutStreet(string streetName) {
+Vertex<T> * Graph<T>::cutStreet(string streetName, unsigned long int &n_nodes) {
 	for (Vertex<T> * vertex : this->vertexSet) {
 		for(pair<long long int , Edge<T>* > p : vertex->adjacent){
 			Edge<T> * edge = p.second;
 			if (edge->getNameMask() == streetName) {
 				this->resetAlgorithmVars();
-				this->generateCarPaths(edge->dest);
+				this->generateCarPaths(edge->dest, n_nodes);
 				edge->cutRoad();
 				this->show_name = false;
 				return vertex;
@@ -239,6 +239,9 @@ void Graph<T>::initializeGraphViewer(GraphViewer *gv) const {
 	for (Vertex<T> * node : this->vertexSet){
 		pair<int, int> position = calculatePosition(node);
 		gv->addNode(node->getIDMask(), position.first, position.second);
+
+		if(node->getIDMask() == 235 || node->getIDMask() == 55)
+			gv->setVertexColor(node->getIDMask(), MAGENTA);
 	}
 	for (Vertex<T> * node : this->vertexSet) {
 		for (pair<long long int, Edge<T>* > p : node->getAdjacent()) {
@@ -314,7 +317,6 @@ template<class T>
 void Graph<T>::addVertex(Vertex<T> *v) {
 	v->id_mask = this->counter++;
 	this->vertexSet.insert(v);
-	return true;
 }
 
 /**
@@ -346,27 +348,30 @@ Vertex<T>* Graph<T>::getVertexByIDMask(long long int id) const {
 }
 
 template<class T>
-void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest) {
+void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest, const unsigned long int NODES_LIMIT) {
 	for (Vertex<T> * v : this->vertexSet) {
-		v->path = NULL;
-		v->dist = INT_INFINITY;
-		v->process = false;
+		v->path = NULL; v->dist = INT_INFINITY; v->process = false;
 	}
-	const unsigned int MAX_EXPLORE_NODES = this->vertexSet.size();
 	sourc->dist = 0;
 	list<Vertex<T> > closed_list;
 	vector<Vertex<T> > open_list;
 	open_list.push_back(*sourc);
 	while ( !open_list.empty() ){
-		if(closed_list.size() >= MAX_EXPLORE_NODES ){ //if no path was found
+		if(closed_list.size() >= NODES_LIMIT ){ //if no path was found
 			dest->path = NULL;
 			cout << "	A* explored " << closed_list.size() << " nodes\n";
 			return;
 		}
+
 		make_heap( open_list.begin() , open_list.end() , [] (Vertex<T> v1 , Vertex<T> v2) { return v1.getDist() > v2.getDist(); } );
+		cout << "[";
+		for (Vertex<T> v : open_list)
+			cout << v.getIDMask() << ", ";
+		cout << "]\n";
 		Vertex<T> curr = open_list.front();  
-		open_list.erase(open_list.begin());
-		cout << curr.getIDMask() << "->";g
+		pop_heap(open_list.begin() , open_list.end() , [] (Vertex<T> v1 , Vertex<T> v2) { return v1.getDist() > v2.getDist(); } );
+		open_list.pop_back();
+		//cout << closed_list.size() << "\n";
 		for ( pair<long long int,Edge<T>*> p : curr.adjacent){
 			Edge<T> *edge = p.second;
 			Vertex<T> *adjacent = edge->dest;
