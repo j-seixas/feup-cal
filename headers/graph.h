@@ -118,7 +118,7 @@ public:
 	inline void setGraphID(int x) {this->graph_ID = x;}
 
 	inline int getGraphID() {return this->graph_ID;}
-	inline T getID() const {return ID;}
+	inline T getID() const {return this->ID;}
 	inline string getName() const {return this->streetName;}
 	inline bool getTwoWays() const {return this->isTwoWays;}
 	inline unsigned int getMaxCars() const {return this->max_number_cars;}

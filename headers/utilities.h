@@ -8,9 +8,9 @@
 #include <map>
 #include <cmath>
 
-#define NODES_FILE "rsc/Nodes4.txt"
-#define EDGES_FILE "rsc/Edges4.txt"
-#define STREETS_FILE "rsc/Streets4.txt"
+#define NODES_FILE "rsc/Nodes6.txt"
+#define EDGES_FILE "rsc/Edges6.txt"
+#define STREETS_FILE "rsc/Streets6.txt"
 
 using namespace std;
 

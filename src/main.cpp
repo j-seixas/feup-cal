@@ -24,6 +24,9 @@ void run() {
 	srand(time(0));
 	Graph<long long int> graph;
 	initGraph(graph);
+	//unsigned long int n = 0;
+	//Vertex<long long int> * v = graph.cutStreet("BKP",n);
+	//carsMovingMenu(graph,v ,NULL, n);
 	GraphViewer *gv = new GraphViewer(WIDTH, HEIGHT, false);
 	initGraphViewer(gv);
 	graph.initializeGraphViewer(gv);

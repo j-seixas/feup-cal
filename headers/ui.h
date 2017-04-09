@@ -11,6 +11,7 @@ using namespace std;
 template<class T>
 void  carsMovingMenu( Graph<T> &graph , Vertex<T> *sourc , GraphViewer *gv, unsigned long int &n_nodes){
 	bool run_all = false;
+	char chr;
 	cout << "Generating alternatives at character inserted \n";
 	for (Vertex<T> *dest : graph.getCarsDest() ){
 		cout << "Generating for " << sourc->getIDMask() << " -> " << dest->getIDMask();
@@ -18,7 +19,9 @@ void  carsMovingMenu( Graph<T> &graph , Vertex<T> *sourc , GraphViewer *gv, unsi
 		std::chrono::high_resolution_clock::time_point current = std::chrono::high_resolution_clock::now();
 		if(!run_all){
 			if (cin.peek() != EOF)
-				cin.get();
+				cin.get( chr );
+			if (chr == ' ')
+				run_all = true;
 		}
 		
 		current = std::chrono::high_resolution_clock::now();
