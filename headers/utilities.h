@@ -8,9 +8,9 @@
 #include <map>
 #include <cmath>
 
-#define NODES_FILE "rsc/Nodes6.txt"
-#define EDGES_FILE "rsc/Edges6.txt"
-#define STREETS_FILE "rsc/Streets6.txt"
+#define NODES_FILE "rsc/Nodes5.txt"
+#define EDGES_FILE "rsc/Edges5.txt"
+#define STREETS_FILE "rsc/Streets5.txt"
 
 using namespace std;
 
@@ -142,8 +142,9 @@ void loadStreets(Graph<T> &graph) {
 		istringstream iss(line);
 		iss >> edgeID >> delimiter;
 		getline(iss, streetName, delimiter);
+		iss >> delimiter;
 		getline(iss, isTwoWaysStr, '\n');
-		isTwoWays = (isTwoWayStr == "True");
+		isTwoWays = (delimiter == 'T');
 		for (Vertex<T> * vertex : graph.getVertexSet() ){
 			for( pair<long long int , Edge<T> *> p : vertex->getAdjacent() )
 				if (p.second->getID() == edgeID){
@@ -152,8 +153,6 @@ void loadStreets(Graph<T> &graph) {
 					ed->setNameMask( nextStreetName() );
 					ed->setTwoWays(isTwoWays);
 					if (isTwoWays) {
-						cout << "TWO WAYS\n";
-						//If it's two ways, create another edge which is the opposite of the original and so is its ID.
 						Edge<T>* oppositeEdge = new Edge<T>(vertex, (-1 * ed->getID()), calculateDistance(vertex, ed->getDest()));
 						oppositeEdge->setName(streetName);
 						oppositeEdge->setNameMask(nextStreetName());
