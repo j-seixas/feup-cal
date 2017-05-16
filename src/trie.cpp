@@ -1,6 +1,7 @@
 #include "../headers/trie.h"
 
 #include <stdio.h>
+#include <chrono>
 #include <iostream>
 
 using namespace std;
@@ -31,28 +32,57 @@ void Trie::insertWord(string &word){
 		temp[charToArrPos(word[i])].eow = true;
 }
 
-
 bool Trie::exactWordSearch(string &word){
 	node_t *temp = this->root.next;
-	size_t i = 0;
-	for (i = 0; i < word.length()-1; i++){
-		int pos = charToArrPos(word[i]);
+	unsigned int i = 0, pos = charToArrPos(word[i]);
+	for (i = 0; i < word.length()-1; i++ , pos = charToArrPos(word[i])){
 		if( temp[ pos ].next == NULL )
 			break;
 
 		temp = temp[pos].next;
 	}
-	
 	return ( (i == word.length() -1) && temp[charToArrPos(word[i])].eow );
 }
 
 
+int editDistance(string pattern, string text)
+{
+	int n=text.length();
+	vector<int> d(n+1);
+	int old, //current min distance?
+		  neww;
+	for (int j=0; j<=n; j++)
+		d[j]=j;
+	int m=pattern.length();
+	for (int i=1; i<=m; i++) { //text iterator
+		old = d[0];
+		d[0]=i;
+		for (int j=1; j<=n; j++) { //pattern iterator
+			if (pattern[j-1]==text[i-1])
+				neww = old;
+			else { //minimun between old min distance and previous spot
+				neww = min(old,d[i]);
+				neww = min(neww,d[i-1]);
+				neww = neww +1;
+			}
+			old = d[i];
+			d[i] = neww;
+		}
+	}
+	return d[n];
+}
+
+
+
 int main(){
 	Trie test;
-	string tmp = "PINTOU";
-	test.insertWord(tmp);
-	if( test.exactWordSearch(tmp) )
-		printf("PINTOU CRLH!\n");
+	string test1 = "PINTOU", test2 = "PINTADOR", test3 = "CRLH", test4 = "PINTADORA";
+
+	test.insertWord(test1);
+	test.insertWord(test2);
+	test.insertWord(test3);
+	if( test.exactWordSearch(test1) && test.exactWordSearch(test2) && test.exactWordSearch(test3) && !test.exactWordSearch(test4) )
+		printf("PINTOU CRLH! SIZE = %li\n",sizeof(node_t));
 	else
 		printf("NAO PINTOU :( \n");
 }

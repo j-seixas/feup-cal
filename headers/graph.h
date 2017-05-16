@@ -21,8 +21,8 @@ template<class T> pair<int, int> calculatePosition(Vertex<T>* v);
 
 const int INT_INFINITY = INT_MAX;
 
-/** 
-	@brief Class Vertex 
+/**
+	@brief Class Vertex
 	@var ID Id used to identify the map (gotten from the files)
 	@var id_mask Id_mask that is used by the program (assigned at the loading stage, starts from 0 and increments)
 	@var latitudeRadians Latitude of the vertex
@@ -48,7 +48,7 @@ class Vertex {
 	bool reachable = true;
 	bool process = false;
 public:
-	Vertex(T in, double latRad, double longRad) : 
+	Vertex(T in, double latRad, double longRad) :
 		ID(in), latitudeRadians(latRad), longitudeRadians(longRad), dist(0) , path(NULL){};
  	Vertex(long long int id_mask) : id_mask(id_mask) {};
 
@@ -160,7 +160,7 @@ public:
 	bool addEdge(Edge<T>* edge, Vertex<T>* from);
 	bool removeEdge(const T &sourc, const T &dest);
 	inline void initializeSet(const unsigned int size) {this->vertexSet = unordered_set<Vertex<T> *,hashFuncs,hashFuncs>(size);}
-	
+
 	inline unordered_set<Vertex<T> *,hashFuncs,hashFuncs> &getVertexSet() {return this->vertexSet;}
 	inline int getNumVertex() const {return this->vertexSet.size();}
 	inline unsigned long int getCounter() const {return this->counter;}
@@ -385,14 +385,14 @@ void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest, const unsigned long int 
 
 	while ( !open_list.empty() ){
 		make_heap( open_list.begin() , open_list.end() , [] (Vertex<T> *v1 , Vertex<T> *v2) { return v1->getDist() > v2->getDist(); } );
-		Vertex<T> curr = *(open_list.front()) , *curr_ptr = open_list.front();  
+		Vertex<T> curr = *(open_list.front()) , *curr_ptr = open_list.front();
 		open_list.erase(open_list.begin());
 		if (curr.id_mask == dest->id_mask){ //Here to guarantee optimal path
 			cout << "	!SUCESS!	\n";
 			cout << "	A* explored " << closed_list.size() << " nodes\n";
 			return;
 		}
-		
+
 		for ( pair<long long int,Edge<T>*> p : curr.adjacent){
 			Edge<T> *edge = p.second;  Vertex<T> *adjacent = edge->dest;
 			if (edge->curr_number_cars == edge->max_number_cars || edge->isCut()) //ignore if street full
@@ -428,8 +428,8 @@ void Graph<T>::Astar(Vertex<T> *sourc, Vertex<T> *dest, const unsigned long int 
 				adjacent->path = curr_ptr;
 			}
 		}
-		if ( !curr.process){ //if node not yet processed add to closed list 
-			curr.process = true; 
+		if ( !curr.process){ //if node not yet processed add to closed list
+			curr.process = true;
 			closed_list.push_back(curr_ptr);
 		}
 		if(closed_list.size() >= NODES_LIMIT ){ //if no path was found

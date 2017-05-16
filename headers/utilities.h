@@ -73,7 +73,7 @@ void updateBounds(const Vertex<T> *v) {
 template<class T>
 void loadNodes(Graph<T> &graph) {
 	//Format: nodeID;latitudeDegrees;longitudeDegrees;longitudeRadians;latitudeRadians
-	string line, file_name = NODES_FILE;	
+	string line, file_name = NODES_FILE;
 	ifstream file;
 	file.open(file_name);
 	if (!file.is_open()) {
@@ -152,6 +152,7 @@ void loadStreets(Graph<T> &graph) {
 					ed->setName(streetName);
 					ed->setNameMask( nextStreetName() );
 					ed->setTwoWays(isTwoWays);
+					
 					if (isTwoWays) {
 						Edge<T>* oppositeEdge = new Edge<T>(vertex, (-1 * ed->getID()), calculateDistance(vertex, ed->getDest()));
 						oppositeEdge->setName(streetName);
