@@ -5,8 +5,8 @@ CFLAGS= -I $(IDIR) -Wall -Wextra
 
 ODIR= ./obj
 
-#PROJECT SPECIFIC DEPENDENCIES 
-_PROJ_DEPS=graph.h utilities.h ui.h
+#PROJECT SPECIFIC DEPENDENCIES
+_PROJ_DEPS=graph.h utilities.h ui.h trie.h
 PROJ_DEPS=$(patsubst %,$(IDIR)/%,$(_PROJ_DEPS))
 
 _PROJ_OBJ=main.o utilities.o
@@ -37,4 +37,4 @@ proj: $(OBJS)
 .PHONY: clean
 
 clean:
-	rm -f $(ODIR)/*.o proj
+	@rm -fr $(ODIR) proj
