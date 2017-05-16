@@ -151,6 +151,7 @@ template<class T>
 class Graph {
 	unordered_set<Vertex<T> *,hashFuncs,hashFuncs> vertexSet;
 	map<string, Edge<T>*> nameToEdge;
+	Trie trie;
 	list<Vertex<T> *> cars_destination;
 	unsigned long int counter = 0;
 
