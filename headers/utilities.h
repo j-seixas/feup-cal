@@ -152,12 +152,15 @@ void loadStreets(Graph<T> &graph) {
 					ed->setName(streetName);
 					ed->setNameMask( nextStreetName() );
 					ed->setTwoWays(isTwoWays);
-					
+					graph.nameToEdge.insert(streetName, ed);
+					graph.trie.insertWord(streetName);
 					if (isTwoWays) {
 						Edge<T>* oppositeEdge = new Edge<T>(vertex, (-1 * ed->getID()), calculateDistance(vertex, ed->getDest()));
-						oppositeEdge->setName(streetName);
+						oppositeEdge->setName(streetName + "B");
 						oppositeEdge->setNameMask(nextStreetName());
 						ed->getDest()->addEdge(oppositeEdge);
+						graph.nameToEdge.insert(streetName + "B", oppositeEdge);
+						graph.trie.insertWord(streetName + "B");
 				}
 			}
 		}
