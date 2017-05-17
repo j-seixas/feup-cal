@@ -9,7 +9,7 @@ ODIR= ./obj
 _PROJ_DEPS=graph.h utilities.h ui.h trie.h
 PROJ_DEPS=$(patsubst %,$(IDIR)/%,$(_PROJ_DEPS))
 
-_PROJ_OBJ=main.o utilities.o
+_PROJ_OBJ=main.o utilities.o trie.o
 PROJ_OBJS=$(patsubst %,$(ODIR)/%,$(_PROJ_OBJ))
 
 #GRAPHVIEWER DEPEPNDENCIES
