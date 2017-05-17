@@ -44,9 +44,7 @@ bool Trie::exactWordSearch(string &word){
 	return ( (i == word.length() -1) && temp[charToArrPos(word[i])].eow );
 }
 
-
-int editDistance(string pattern, string text)
-{
+int editDistance(const string &pattern, const string &text){
 	int n=text.length();
 	vector<int> d(n+1);
 	int old, //current min distance?
@@ -71,8 +69,6 @@ int editDistance(string pattern, string text)
 	}
 	return d[n];
 }
-
-
 
 int main(){
 	Trie test;
