@@ -26,9 +26,11 @@ default:proj
 
 #GRAPHVIEWER RULE
 $(GRAPH_OBJS): $(GRAPH_DIR)/*.cpp $(GRAPH_DEPS)
+	@mkdir -p obj
 	@$(CC) -c -O3 -o $@ $(patsubst obj%,graph_viewer%,$(patsubst %.o,%.cpp,$@)) -Wall
 #PROJECT RULE
 $(PROJ_OBJS): ./src/*.cpp $(PROJ_DEPS)
+	@mkdir -p obj
 	@$(CC) -c -O3 -o $@ $(patsubst obj%,src%,$(patsubst %.o,%.cpp,$@)) $(CFLAGS)
 
 proj: $(OBJS)
