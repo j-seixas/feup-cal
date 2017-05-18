@@ -18,6 +18,11 @@ Trie::Trie(){
 	this->root.eow  = false;
 }
 
+/**
+ * @brief Insert a word into the Trie
+ * @param[in] word Word to insert into the trie
+ * @detail Time Complexity O(m), where m is string length, Space Complexity O(1)
+ */
 void Trie::insertWord(const string &word){
 	size_t i = 0;
 	node_t *temp = this->root.next;
@@ -32,6 +37,12 @@ void Trie::insertWord(const string &word){
 		temp[charToArrPos(word[i])].eow = true;
 }
 
+/**
+ * @brief Converts from ASCII notation to array position
+ * @param[in] chr Char to convert
+ * @return The array position of the character
+ * @detail Time Complexity O(1), Space Complexity O(1)
+ */
 unsigned char Trie::charToArrPos(char chr) const{
 	if ( (chr >= 65 && chr <= 90) || (chr >= 97 && chr <= 122) ) //Letter
 		return ( toupper(chr) - ALPHABET_BEGINNING );
@@ -41,6 +52,12 @@ unsigned char Trie::charToArrPos(char chr) const{
 		return (ALPHABET_SIZE + 10);
 }
 
+/**
+ * @brief Converts from array position to ASCII notation
+ * @param[in] chr Char to convert
+ * @return The ASCII representation of the character
+* @detail Time Complexity O(1), Space Complexity O(1)
+ */
 unsigned char Trie::arrPosToChar(char chr) const{
 	if (chr >= 0 && chr < ALPHABET_SIZE) //Letter
 		return chr + ALPHABET_BEGINNING;
@@ -49,6 +66,8 @@ unsigned char Trie::arrPosToChar(char chr) const{
 	else //Space
 		return 32;
 }
+
+
 
 int main(){
 	Trie trie;
@@ -70,7 +89,12 @@ int main(){
 
 
 
-
+/**
+ * @brief Searches for the given string
+ * @param[in] word Word to search for
+ * @return True if string was found, false otherwise
+ * @detail Time complexity is near O(m), where m is the string length, Space complexity O(1)
+ */
 bool Trie::exactWordSearch(string &word) const{
 	node_t *temp = this->root.next;
 	unsigned int i = 0;
@@ -84,7 +108,11 @@ bool Trie::exactWordSearch(string &word) const{
 	return ( (i == word.length() -1) && temp[charToArrPos(word[i])].eow );
 }
 
-
+/**
+ * @brief Counts the number of elements of this level of the trie
+ * @param[in] arr Base level to search
+ * @return How many elements it has
+ */
 unsigned char Trie::numberOfElements(const node_t *arr) const{
 	unsigned char cont = 0;
 	for (unsigned char i = 0 ; i < ARR_SIZE ; i++)
@@ -94,6 +122,13 @@ unsigned char Trie::numberOfElements(const node_t *arr) const{
 	return cont;
 }
 
+/**
+ * @brief Computates the edit distance between the pattern and the text
+ * @param[in] pattern The pattern to search for
+ * @param[in] text The text to search in
+ * @return The edit distance between the two parameters
+ * @detail From solution of the TP11
+ */
 unsigned int Trie::editDistance(const string &pattern, const string &text) const{
 	int n=text.length();
 	vector<int> d(n+1);
@@ -123,21 +158,29 @@ unsigned int Trie::editDistance(const string &pattern, const string &text) const
 string Trie::approximateWordSearch(string &word) const {
 	return word;
 }
-/*
+
+//TODO Check if this works
 unsigned int Trie::findInitK(const std::string &word) const {
 	node_t *temp = this->root.next;
 	unsigned int edit_dist = 0;
 	for( unsigned int i = 0 ; i < word.length() ; i++){
 		if ( temp[this->charToArrPos(word[i])] == nullptr ){ //does not have current character
-			edit_dist++;
-			node_t *tmp;
-			if ( (tmp = this->findWordInSubtrie(word[i], temp)) == nullptr){ //No other subtrie has the next character
-
+			unsigned int str_len = (word.length() - i -1);
+			string tmp = word.substr(i+1, str_len);
+			if ( (temp = this->findWordInSubtrie(tmp, temp, str_len)) != nullptr ){ //character exists in subtrie
+				edit_dist+=str_len;
+				i+=str_len;
+			}
+			else{
+				edit_dist+= (word.length() - i -1);
+				break;
 			}
 		}
 	}
+
+	return edit_dist;
 }
-*/
+
 /**
  * @brief Searches for the first occurrence of the next existant character in the subtrie
  * @param[in] word The remainder of the word to search, usually a substring of a string
@@ -177,6 +220,12 @@ node_t *Trie::findWordInSubtrie(const string &word, node_t *arr, unsigned int &m
 	return nullptr;
 }
 
+/**
+ * @brief Checks the character exists in the next level of the trie
+ * @param[in] chr Character to check the existance
+ * @param[in] arr Base node
+ * @return Position in the array where the character occurs, or -1 if it does not occur
+ */
 int Trie::charExistsInArr(const char &chr, const node_t *arr) const {
 	cout << "Searching chr = " << chr << endl;
 	int i = 0;
