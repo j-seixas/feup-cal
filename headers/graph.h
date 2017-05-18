@@ -2,6 +2,7 @@
 #define GRAPH_H
 
 #include "../graph_viewer/graphviewer.h"
+#include "../headers/trie.h"
 #include <vector>
 #include <unordered_map>
 #include <map>
@@ -16,8 +17,6 @@ using namespace std;
 template<class T> class Edge;
 template<class T> class Graph;
 template<class T> class Vertex;
-//TODO this function should be in Graph, no need to go to utilities.cpp
-long long int nextInteger();
 template<class T> pair<int, int> calculatePosition(Vertex<T>* v);
 
 const int INT_INFINITY = INT_MAX;
@@ -168,6 +167,8 @@ public:
 	inline int getNumVertex() const {return this->vertexSet.size();}
 	inline unsigned long int getCounter() const {return this->counter;}
 	inline list<Vertex<T> *> &getCarsDest() {return this->cars_destination;}
+	inline void insertWordToTrie(string &word) {this->trie.insertWord(word);}
+	inline void insertNameToEdge(const string &word, Edge<T> *ptr) { this->nameToEdge.insert(std::pair< string,Edge<T>* >(word, ptr)); }
 	Vertex<T>* getVertexByIDMask(long long int id) const;
 
 

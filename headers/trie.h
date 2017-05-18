@@ -2,55 +2,56 @@
 #define TRIE_H
 
 #include <string>
+#include <vector>
+#include <queue>
 #include <cctype>
+#include <algorithm>
 
+#define ARR_SIZE 37
 #define ALPHABET_SIZE 26
+#define NUMBER_SIZE 10
+
 #define ALPHABET_BEGINNING 65
+#define NUMBER_BEGGINING 48
 
 
 struct node_t{
 	bool eow;
-	node_t *next;
+	node_t *next = nullptr;
 };
 
 class Trie{
-	node_t root;
+
 
 public:
+	node_t root;
 	Trie();
 
-	void insertWord(std::string &word);
+	void insertWord(const std::string &word);
 
-	bool exactWordSearch(std::string &word);
+	bool exactWordSearch(std::string &word) const;
 
+	std::string approximateWordSearch(std::string &word) const;
+
+	node_t *findWordInSubtrie(const std::string &word, node_t *arr, unsigned int &max_depth) const;
+
+	void printArr(const node_t *arr) const;
 
 private:
-	inline int charToArrPos(char &chr){ return (toupper(chr) - ALPHABET_BEGINNING); }
+
+	inline bool arrContainsChar(char &chr,const node_t *arr) { return arr[this->charToArrPos(chr)].next != NULL;}
+
+	unsigned int editDistance(const std::string &pattern,const  std::string &text) const;
+	unsigned int findInitK(const std::string &word) const;
+	unsigned char numberOfElements(const node_t *arr) const;
+
+	int charExistsInArr(const char &chr, const node_t *arr) const;
+
+	unsigned char charToArrPos(char chr) const;
+	unsigned char arrPosToChar(char chr) const;
+
 };
 
-int editDistance(string pattern, string text)
-{
-	int n=text.length();
-	vector<int> d(n+1);
-	int old,neww;
-	for (int j=0; j<=n; j++)
-		d[j]=j;
-	int m=pattern.length();
-	for (int i=1; i<=m; i++) {
-		old = d[0];
-		d[0]=i;
-		for (int j=1; j<=n; j++) {
-			if (pattern[i-1]==text[j-1]) neww = old;
-			else {
-				neww = min(old,d[j]);
-				neww = min(neww,d[j-1]);
-				neww = neww +1;
-			}
-			old = d[j];
-			d[j] = neww;
-		}
-	}
-	return d[n];
-}
+
 
 #endif
