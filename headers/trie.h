@@ -43,13 +43,15 @@ public:
 
 	std::string approximateWordSearch(std::string &word) const;
 
-	node_t *findWordInSubtrie(const std::string &word, node_t *arr, unsigned int &max_depth) const;
+	node_t *findWordInSubtrie(const std::string &word, node_t *arr, unsigned int *max_depth) const;
 
 	void printArr(const node_t *arr) const;
 
 	unsigned int findInitK(const std::string &word) const;
 
 	void static suffixDFS(const std::string &word, const std::string pref , node_t *arr, approx_search *info);
+
+	node_t *closestEOW(node_t *arr, unsigned int &depth) const;
 
 private:
 
