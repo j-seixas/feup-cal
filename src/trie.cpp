@@ -70,18 +70,20 @@ int main(){
 	string insert1 = "ARVORE" , insert2 = "ABELHA", insert3 = "ABEDO", insert4 = "ABORIGENE", insert5 = "AMAR", insert6 = "ABELHO",
 				 insert7 = "AMARAS", insert8 = "AMADOR", insert9 = "ABORINA", insert10 = "AR",
 				 test1 = "ARINR",  test2 = "ARI", test3 = "ARVOREDO", test4 = "ABOLA", test5 = "ABRLI",
-				 test6 = "ZBALE";
+				 test6 = "ZBALE", test7 = "ABRA";
 	trie.insertWord(insert1); trie.insertWord(insert2); trie.insertWord(insert3);
 	trie.insertWord(insert4); trie.insertWord(insert5); trie.insertWord(insert6);
 	trie.insertWord(insert7); trie.insertWord(insert8); trie.insertWord(insert9);
 	trie.insertWord(insert10);
 
-	cout << "INIT K = " << trie.findInitK(test1) << " , expected 3" << endl;
-	cout << "INIT K = " << trie.findInitK(test2) << " , expected 4" << endl;
-	cout << "INIT K = " << trie.findInitK(test3) << " , expected 2" << endl;
-	cout << "INIT K = " << trie.findInitK(test4) << " , expected 4" << endl;
-	cout << "INIT K = " << trie.findInitK(test5) << " , expected 3" << endl;
-	cout << "INIT K = " << trie.findInitK(test6) << " , expected 4" << endl;
+	cout << "WORD = " << trie.approximateWordSearch(test1) << " , expected ARVORE" << endl;
+	//cout << "WORD = " << trie.approximateWordSearch(test2) << " , expected 4" << endl;
+	//cout << "WORD = " << trie.approximateWordSearch(test3) << " , expected 2" << endl;
+	//cout << "WORD = " << trie.approximateWordSearch(test4) << " , expected 4" << endl;
+	//cout << "WORD = " << trie.approximateWordSearch(test5) << " , expected 3" << endl;
+	//cout << "WORD = " << trie.approximateWordSearch(test6) << " , expected 4" << endl;
+	//cout << "WORD = " << trie.approximateWordSearch(test7) << " , expected 3" << endl;
+
 
 	return 0;
 }
@@ -119,8 +121,8 @@ bool Trie::exactWordSearch(string &word) const{
  */
 unsigned char numberOfElements(const node_t *arr){
 	unsigned char cont = 0;
-	for (unsigned char i = 0 ; i < ARR_SIZE ; i++)
-		if (arr != nullptr && arr[i].next != nullptr)
+	for (unsigned char i = 0 ; i < ARR_SIZE && arr != nullptr ; i++)
+		if (arr[i].next != nullptr || arr[i].eow)
 			cont++;
 
 	return cont;
@@ -164,49 +166,58 @@ string Trie::approximateWordSearch(string &word) const {
 	approx_search *info = (approx_search *)malloc(sizeof(approx_search));
 	info->min_dist = this->findInitK(word);
 	thread(suffixDFS,word,"",this->root.next,info).join();
-	cout << "	!!SUFFIX RETURNED!!\n";
 	string closest_word = info->word;
 	free(info);
 	return closest_word;
 }
 
+int findFirstElementPos(const node_t *arr){
+	for (unsigned char pos = 0 ; pos < ARR_SIZE && arr != nullptr ; pos++)
+		if (arr[pos].next != nullptr || arr[pos].eow)
+			return pos;
+
+	return -1;
+}
 
 void Trie::suffixDFS(const string &word, const string pref , node_t *arr, approx_search *info){
-	cout << this_thread::get_id() << " - NEW THREAD\n";
-
-	//for ( int i = 0 ; i < ARR_SIZE && arr != nullptr ; i++)
-	//	cout << arrPosToChar(i) << " - [ " << arr[i].eow << "|" << arr[i].next << "] ,";
-	//cout << "\n";
+	cout << this_thread::get_id() << " - NEW THREAD - " << pref << endl;
 
 	string preffix = pref;
-	unsigned int dist = 0 , pos = 0, n_elems = 0, cont = 0;
+	unsigned int dist = 0 , n_elems = 0;
+	int pos = 0;
 	list<thread> all_threads;
-	while( (n_elems = numberOfElements(arr)) == 1 && !arr->eow){
-		cout << this_thread::get_id() << " - LEVEL " << cont << endl;
-		for (pos = 0 ; pos < ARR_SIZE ; pos++)
-			if ( arr[pos].next != nullptr){
-				cout << this_thread::get_id() << " - Added letter : " << (char)arrPosToChar(pos) << endl;
-				preffix += (char)arrPosToChar(pos);
+	while( (n_elems = numberOfElements(arr)) == 1 &&  ((pos = findFirstElementPos(arr)) != -1) /* && arr[pos].eow)*/  ){
+		if (pos != -1){
+			preffix += (char)arrPosToChar(pos);
+			cout << this_thread::get_id() << " - Added letter : " << (char)arrPosToChar(pos) << ", word = " << preffix << endl;
+			if (!arr[pos].eow)
 				arr = arr[pos].next;
+			else{
+				cout << this_thread::get_id() << "Breaking, word = " << preffix << endl;
 				break;
 			}
+		}
 	}
 
-	string text = word.substr(0,preffix.length());
+	string tmp_word = word.substr(0,preffix.length());
+	dist = editDistance(preffix , tmp_word);
+
 	flag.lock();
-	cout << this_thread::get_id() << " - Found fork, min = " << info->min_dist << " curr : " << preffix << ", pos = " << pos <<  endl;
-	if ( (dist = editDistance(preffix , text)) < info->min_dist && n_elems > 0){
-		cout << this_thread::get_id() << " - dist = " << dist << endl;
-		if (text.length() == word.length() && arr->eow){
+	if ( dist <= info->min_dist && n_elems > 0){
+		if ( arr[pos].eow ){
+			cout << this_thread::get_id() << "Updating with " << preffix << endl;
 			info->min_dist = dist;
 			info->word = preffix;
 		}
-		flag.unlock();
-		for (unsigned int i = 0 ; i < ARR_SIZE ; i++)
+
+		for (unsigned int i = 0 ; i < ARR_SIZE ; i++){
 			if (arr[i].next != nullptr){
-				cout << "ptr = " << arr[i].next << endl;
-				all_threads.push_front(thread(&Trie::suffixDFS,word, preffix, arr[i].next , info));
+				cout << this_thread::get_id() << " - FORK : m = " << info->min_dist << " curr : " << info->word << ", pref = " << preffix << ", dist = " << dist << ", chr = " << arrPosToChar(i) << endl;
+				all_threads.push_front(thread(&Trie::suffixDFS,word, preffix+(char)arrPosToChar(i), arr[i].next , info));
 			}
+		}
+
+			flag.unlock();
 	}
 	else
 		flag.unlock();
@@ -250,14 +261,16 @@ unsigned int Trie::findInitK(const std::string &word) const {
 	}
 
 	unsigned int min = 0;
-	cout << "Temp=  " << temp << " , temp.next = " << temp[pos].next << endl;
-	if (!temp[pos].eow)
+	//cout << "Temp=  " << temp << " , temp.next = " << temp[pos].next << endl;
+	if (!temp[pos].eow){
+		//printArr(temp);
 		this->closestEOW(temp,min);
+	}
 	else{
-		cout << "reached end of trie\n";
+		//cout << "reached end of trie\n";
 		min = (word.length() - i - 1);
 	}
-	cout << "	MIN = " << min << " | EDIT DIST = " << edit_dist << endl;
+	//cout << "	MIN = " << min << " | EDIT DIST = " << edit_dist << endl;
 
 
 	return edit_dist+min;
@@ -283,7 +296,7 @@ node_t *Trie::findWordInSubtrie(const string &word, node_t *arr, unsigned int *m
 		pos = charToArrPos( word[max_init-(*max_depth)] );
 		//cout << "	Subtrie search for : " << word[max_init-(*max_depth)] << endl;
 		if ( tmp[pos].next != nullptr ){ //character found
-			cout << "!CHAR FOUND! , max init = " << max_init << " , max_depth = " << (*max_depth) << endl;
+			//cout << "!CHAR FOUND! , max init = " << max_init << " , max_depth = " << (*max_depth) << endl;
 			(*max_depth) = max_init - (*max_depth); //edit distance
 			return tmp[pos].next;
 		}
@@ -302,7 +315,7 @@ node_t *Trie::findWordInSubtrie(const string &word, node_t *arr, unsigned int *m
 			(*max_depth)--;
 		}
 	}
-	cout << "Word not found in subtrie, returning null\n";
+	//cout << "Word not found in subtrie, returning null\n";
 	return nullptr;
 }
 
@@ -313,16 +326,22 @@ node_t *Trie::closestEOW(node_t *arr, unsigned int &depth) const{
 	q.push(arr);
 	while( !q.empty() && arr != nullptr){
 		node_t * tmp = q.front();		q.pop();
+		//cout << "	READ FROM QUEUE\n";
+		//printArr(tmp);
 		cont--;
 
 		//cout << "	DEPTH " << depth << endl
 		for (unsigned int i = 0 ; i < ARR_SIZE ; i++){ //insert next nodes
-			if(tmp[i].next != nullptr && tmp[i].next->eow){
-				cout << "EOW\n";
-				depth++;
+			if( tmp[i].eow /*tmp[i].next != nullptr && tmp[i].next->eow */ ){
+				//cout << "CHAR = " << arrPosToChar(i) << endl;
+				//cout << "EOW\n";
+				//depth++;
 				return tmp[i].next;
 			}
 			else if (tmp[i].next != nullptr){
+				//cout << "	PUSHING TO STACK :" << endl;
+				//cout << "ORIGIN, char = " << arrPosToChar(i) << endl;
+				//printArr(tmp[i].next);
 				q.push(tmp[i].next);
 				pre_cont++;
 			}
