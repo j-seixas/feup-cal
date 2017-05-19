@@ -119,10 +119,10 @@ bool Trie::exactWordSearch(string &word) const{
  * @param[in] arr Base level to search
  * @return How many elements it has
  */
-unsigned char numberOfElements(const node_t *arr){
+unsigned char numberOfElements(const node_t arr){
 	unsigned char cont = 0;
-	for (unsigned char i = 0 ; i < ARR_SIZE && arr != nullptr ; i++)
-		if (arr[i].next != nullptr || arr[i].eow)
+	for (unsigned char i = 0 ; i < ARR_SIZE ; i++)
+		if (arr.eow || arr.next[i].next != nullptr || arr.next[i].eow)
 			cont++;
 
 	return cont;
@@ -187,27 +187,30 @@ int findFirstElementPos(const node_t *arr){
 }
 
 void Trie::suffixDFS(const string &word, const string pref , node_t chr, unsigned int *min_dist, list<string> *results){
-	cout << this_thread::get_id() << " - NEW THREAD - " << pref << endl;
+	//cout << this_thread::get_id() << " - NEW THREAD - " << pref << endl;
 	string preffix = pref, tmp_word;
 	unsigned int dist = 0 , n_elems = 0;
 	int pos = 0;
 	list<thread> all_threads;
 
-	while( ((n_elems = numberOfElements(chr.next)) == 1 &&  ((pos = findFirstElementPos(chr.next)) != -1) ) ){
-		if (!chr.eow){
+	while( ((n_elems = numberOfElements(chr)) == 1 &&  ((pos = findFirstElementPos(chr.next)) != -1) ) ){
+		if ( !chr.eow ){
 			preffix += (char)arrPosToChar(pos);
-			cout << this_thread::get_id() << " - Added letter : " << (char)arrPosToChar(pos) << ", word = " << preffix << endl;
+			//cout << this_thread::get_id() << " - Added letter : " << (char)arrPosToChar(pos) << ", word = " << preffix << endl;
 			chr = chr.next[pos];
 		}
 		else{
-			cout << this_thread::get_id() << "Breaking, word = " << preffix << endl;
+			//cout << this_thread::get_id() << "Breaking, word = " << preffix << endl;
 			break;
 		}
 	}
+
 	if (!chr.eow)
 		tmp_word = word.substr(0,preffix.length());
-	else
+	else{
+		//cout << "	!!EOW!! , n_elem = " << n_elems << endl;;
 		tmp_word = word;
+	}
 
 	dist = editDistance(preffix , tmp_word);
 
@@ -215,17 +218,17 @@ void Trie::suffixDFS(const string &word, const string pref , node_t chr, unsigne
 	if ( dist <= (*min_dist) && n_elems > 0){
 		if ( chr.eow ){
 			if (dist < (*min_dist) ){
-				cout << "		!!!ERASING LIST CONTENTS!!! \n";
+				//cout << "		!!!ERASING LIST CONTENTS!!! \n";
 				results->clear();
 			}
-			cout << this_thread::get_id() << "Updating with " << preffix << ", DIST = " << dist <<  endl;
+			//cout << this_thread::get_id() << "Updating with " << preffix << ", DIST = " << dist <<  endl;
 			(*min_dist) = dist;
 			results->push_front( preffix );
 		}
 
 		for (unsigned int i = 0 ; i < ARR_SIZE ; i++){
-			if (chr.next[i].next != nullptr){
-				cout << this_thread::get_id() << " - FORK : m = " << (*min_dist) << ", pref = " << preffix << ", dist = " << dist << ", chr = " << arrPosToChar(i) << endl;
+			if (chr.next != nullptr && chr.next[i].next != nullptr){
+				//cout << this_thread::get_id() << " - FORK : m = " << (*min_dist) << ", pref = " << preffix << ", dist = " << dist << ", chr = " << arrPosToChar(i) << endl;
 				all_threads.push_front(thread(&Trie::suffixDFS,word, preffix+(char)arrPosToChar(i), chr.next[i] , min_dist, results));
 			}
 		}
@@ -235,7 +238,7 @@ void Trie::suffixDFS(const string &word, const string pref , node_t chr, unsigne
 	else
 		flag.unlock();
 
-	cout << this_thread::get_id() << " - Waiting for threads\n";
+	//cout << this_thread::get_id() << " - Waiting for threads\n";
 	for (auto it = all_threads.begin() ; it != all_threads.end() ; it++)
 		it->join();
 }
