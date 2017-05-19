@@ -9,6 +9,99 @@ using namespace std;
 
 static mutex flag;
 
+/**
+ * @brief Converts from array position to ASCII notation
+ * @param[in] chr Char to convert
+ * @return The ASCII representation of the character
+ * @detail Time Complexity O(1), Space Complexity O(1)
+ */
+unsigned char arrPosToChar(char chr){
+	if (chr >= 0 && chr < ALPHABET_SIZE) //Letter
+		return chr + ALPHABET_BEGINNING;
+	else if (chr >= ALPHABET_SIZE && chr < (ALPHABET_SIZE + NUMBER_SIZE) ) //Number
+		return (chr + NUMBER_BEGGINING) - ALPHABET_SIZE;
+	else //Space
+		return 32;
+}
+
+/**
+ * @brief Counts the number of elements of this level of the trie
+ * @param[in] arr Base level to search
+ * @return How many elements it has
+ */
+unsigned char numberOfElements(const node_t arr){
+	unsigned char cont = 0;
+	for (unsigned char i = 0 ; i < ARR_SIZE ; i++)
+		if (arr.eow || arr.next[i].next != nullptr || arr.next[i].eow)
+			cont++;
+
+	return cont;
+}
+
+/**
+ * @brief Computates the edit distance between the pattern and the text
+ * @param[in] pattern The pattern to search for
+ * @param[in] text The text to search in
+ * @return The edit distance between the two parameters
+ * @detail From solution of the TP11
+ */
+unsigned int editDistance(string &pattern, string &text){
+	std::transform(pattern.begin(), pattern.end(),pattern.begin(), ::toupper);
+	std::transform(text.begin(), text.end(),text.begin(), ::toupper);
+	int n=text.length();
+	vector<int> d(n+1);
+	int old,neww;
+	for (int j=0; j<=n; j++)
+		d[j]=j;
+	int m=pattern.length();
+	for (int i=1; i<=m; i++) {
+		old = d[0];
+		d[0]=i;
+		for (int j=1; j<=n; j++) {
+			if (pattern[i-1]==text[j-1]) neww = old;
+			else {
+				neww = min(old,d[j]);
+				neww = min(neww,d[j-1]);
+				neww = neww +1;
+			}
+			old = d[j];
+			d[j] = neww;
+		}
+	}
+	return d[n];
+}
+
+/**
+ * @brief Finds the position of the first element of the array
+ * @param[in] arr Array to search
+ * @return Position of the first element
+ * @detail Used only in suffixDFS in array which only have 1 element. Time Complexity O(n) , Space Complexity O(1)
+ */
+int findFirstElementPos(const node_t *arr){
+	for (unsigned char pos = 0 ; pos < ARR_SIZE && arr != nullptr ; pos++)
+		if (arr[pos].next != nullptr || arr[pos].eow)
+			return pos;
+
+	return -1;
+}
+
+/**
+ * @brief Checks the character exists in the next level of the trie
+ * @param[in] chr Character to check the existance
+ * @param[in] arr Base node
+ * @return Position in the array where the character occurs, or -1 if it does not occur
+ */
+int Trie::charExistsInArr(const char &chr, const node_t *arr) const {
+	int i = 0;
+	for (i = 0 ; i < ARR_SIZE ; i++){
+		if (arr[i].next != nullptr && arr[i].next[charToArrPos(chr)].next != nullptr && arr[i].eow == false)
+			return i;
+
+	}
+
+	return -1;
+}
+
 Trie::Trie(){
 	this->root.next = (node_t *)malloc(sizeof(node_t)*ARR_SIZE);
 	this->root.eow  = false;
@@ -37,17 +130,6 @@ unsigned char Trie::charToArrPos(char chr) const{
 	else //Space
 		return (ALPHABET_SIZE + 10);
 }
-
-
-unsigned char Trie::arrPosToChar(char chr) const{
-	if (chr >= 0 && chr < ALPHABET_SIZE) //Letter
-		return chr + ALPHABET_BEGINNING;
-	else if (chr >= ALPHABET_SIZE && chr < (ALPHABET_SIZE + NUMBER_SIZE) ) //Number
-		return (chr + NUMBER_BEGGINING) - ALPHABET_SIZE;
-	else //Space
-		return 32;
-}
-
 
 /*
 int main(){
@@ -94,43 +176,6 @@ bool Trie::exactWordSearch(string &word) const{
 }
 
 
-unsigned char Trie::numberOfElements(const node_t arr) const{
-	unsigned char cont = 0;
-	for (unsigned char i = 0 ; i < ARR_SIZE ; i++)
-		if (arr.eow || arr.next[i].next != nullptr || arr.next[i].eow)
-			cont++;
-
-	return cont;
-}
-
-
-unsigned int Trie::editDistance(string &pattern, string &text) const{
-	std::transform(pattern.begin(), pattern.end(),pattern.begin(), ::toupper);
-	std::transform(text.begin(), text.end(),text.begin(), ::toupper);
-	int n=text.length();
-	vector<int> d(n+1);
-	int old,neww;
-	for (int j=0; j<=n; j++)
-		d[j]=j;
-	int m=pattern.length();
-	for (int i=1; i<=m; i++) {
-		old = d[0];
-		d[0]=i;
-		for (int j=1; j<=n; j++) {
-			if (pattern[i-1]==text[j-1]) neww = old;
-			else {
-				neww = min(old,d[j]);
-				neww = min(neww,d[j-1]);
-				neww = neww +1;
-			}
-			old = d[j];
-			d[j] = neww;
-		}
-	}
-	return d[n];
-}
-
-
 list<string> *Trie::approximateWordSearch(string &word) const {
 	unsigned int *min_dist = (unsigned int *)malloc(sizeof(unsigned int));
 	*min_dist = this->findInitK(word);
@@ -144,15 +189,6 @@ list<string> *Trie::approximateWordSearch(string &word) const {
 	cout << "]\n";
 
 	return results;
-}
-
-
-int Trie::findFirstElementPos(const node_t *arr) const{
-	for (unsigned char pos = 0 ; pos < ARR_SIZE && arr != nullptr ; pos++)
-		if (arr[pos].next != nullptr || arr[pos].eow)
-			return pos;
-
-	return -1;
 }
 
 
@@ -334,21 +370,4 @@ node_t *Trie::closestEOW(node_t *arr, unsigned int &depth) const{
 	}
 
 	return nullptr;
-}
-
-/**
- * @brief Checks the character exists in the next level of the trie
- * @param[in] chr Character to check the existance
- * @param[in] arr Base node
- * @return Position in the array where the character occurs, or -1 if it does not occur
- */
-int Trie::charExistsInArr(const char &chr, const node_t *arr) const {
-	int i = 0;
-	for (i = 0 ; i < ARR_SIZE ; i++){
-		if (arr[i].next != nullptr && arr[i].next[charToArrPos(chr)].next != nullptr && arr[i].eow == false)
-			return i;
-
-	}
-
-	return -1;
 }

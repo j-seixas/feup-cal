@@ -1,7 +1,7 @@
 IDIR= ./headers
 GRAPH_DIR=./graph_viewer
 CC=g++
-CFLAGS= -I $(IDIR) -Wall -Wextra
+CFLAGS= -I $(IDIR) -Wall -Wextra -O3 -pthread
 
 ODIR= ./obj
 
@@ -27,14 +27,15 @@ default:proj
 #GRAPHVIEWER RULE
 $(GRAPH_OBJS): $(GRAPH_DIR)/*.cpp $(GRAPH_DEPS)
 	@mkdir -p obj
-	@$(CC) -c -O3 -o $@ $(patsubst obj%,graph_viewer%,$(patsubst %.o,%.cpp,$@)) -Wall
+	@$(CC) -c -o $@ $(patsubst obj%,graph_viewer%,$(patsubst %.o,%.cpp,$@)) $(CFLAGS)
+
 #PROJECT RULE
 $(PROJ_OBJS): ./src/*.cpp $(PROJ_DEPS)
 	@mkdir -p obj
-	@$(CC) -c -O3 -o $@ $(patsubst obj%,src%,$(patsubst %.o,%.cpp,$@)) $(CFLAGS)
+	@$(CC) -c -o $@ $(patsubst obj%,src%,$(patsubst %.o,%.cpp,$@)) $(CFLAGS)
 
 proj: $(OBJS)
-	@ g++ -O3 -o $@ $^ $(CFLAGS)
+	@ g++ -o $@ $^ $(CFLAGS)
 
 .PHONY: clean
 

@@ -54,17 +54,9 @@ public:
 	 * @param[in] word Word to search for matches
 	 * @return List containing the results
 	 */
-	std::string approximateWordSearch(std::string &word) const;
-private:
+	std::list<std::string> *approximateWordSearch(std::string &word) const;
 
-	/**
-	 * @brief Computates the edit distance between the pattern and the text
-	 * @param[in] pattern The pattern to search for
-	 * @param[in] text The text to search in
-	 * @return The edit distance between the two parameters
-	 * @detail From solution of the TP11
-	 */
-	unsigned int Trie::editDistance(string &pattern, string &text) const;
+private:
 
 	/**
 	 * @brief Finds the closest End Of Word from the node given
@@ -73,10 +65,7 @@ private:
 	 * @return The node of the closest EOW
 	 * @detail Based on BFS algorithm, Time Complexity O(m), where m is the number of characters in the subtrie, Space Complexity O(m)
 	 */
-	node_t *Trie::closestEOW(node_t *arr, unsigned int &depth) const;
-
-
-	int charExistsInArr(const char &chr, const node_t *arr) const;
+	node_t *closestEOW(node_t *arr, unsigned int &depth) const;
 
 	/**
 	 * @brief Searches for the first occurrence of the next existant character in the subtrie
@@ -106,18 +95,9 @@ private:
 	 */
 	void static suffixDFS(const std::string &word, const std::string pref , node_t chr, unsigned int *min_dist, std::list<std::string> *results);
 
-	/**
-	 * @brief Finds closest End Of Word from starting node
-	 * @param[in] arr Starting node
-	 * @param[out] depth How deep the EOW was
-	 * @return The node which contains the closest EOW
-	 * @detail Based on BFS, Time Complexity O(m), where m is the number of characters in the subtrie, Space Complexity O(m)
-	 */
-	node_t *closestEOW(node_t *arr, unsigned int &depth) const;
-
 /**********************************************************************************************************
 **************************************** UTILITIES ********************************************************
-**********************************************************************************************************
+**********************************************************************************************************/
 
 	/**
 	 * @brief Checks the character exists in the next level of the trie
@@ -125,15 +105,7 @@ private:
 	 * @param[in] arr Base node
 	 * @return Position in the array where the character occurs, or -1 if it does not occur
 	 */
-	int Trie::charExistsInArr(const char &chr, const node_t *arr) const;
-
-	/**
-	 * @brief Converts from array position to ASCII notation
-	 * @param[in] chr Char to convert
-	 * @return The ASCII representation of the character
-	 * @detail Time Complexity O(1), Space Complexity O(1)
-	 */
-	unsigned char arrPosToChar(char chr) const;
+	int charExistsInArr(const char &chr, const node_t *arr) const;
 
 	/**
 	 * @brief Converts from ASCII notation to array position
@@ -148,21 +120,6 @@ private:
 	 * @param[in] arr Array to be printed
 	 */
 	void printArr(const node_t *arr) const;
-
-	/**
-	 * @brief Counts the number of elements of this level of the trie
-	 * @param[in] arr Base level to search
-	 * @return How many elements it has
-	 */
-	unsigned char Trie::numberOfElements(const node_t arr) const;
-
-	/**
-	 * @brief Finds the position of the first element of the array
-	 * @param[in] arr Array to search
-	 * @return Position of the first element
-	 * @detail Used only in suffixDFS in array which only have 1 element. Time Complexity O(n) , Space Complexity O(1)
-	 */
-	int Trie::findFirstElementPos(const node_t *arr) const;
 };
 
 
