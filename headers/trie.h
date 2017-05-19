@@ -23,11 +23,6 @@ struct node_t{
 	node_t *next = nullptr;
 };
 
-struct approx_search{
-	unsigned int min_dist;
-	std::string word;
-};
-
 unsigned char charToArrPos(char chr);
 
 class Trie{
@@ -49,7 +44,7 @@ public:
 
 	unsigned int findInitK(const std::string &word) const;
 
-	void static suffixDFS(const std::string &word, const std::string pref , node_t *arr, approx_search *info);
+	void static suffixDFS(const std::string &word, const std::string pref , node_t chr, unsigned int *min_dist, std::list<std::string> *results);
 
 	node_t *closestEOW(node_t *arr, unsigned int &depth) const;
 

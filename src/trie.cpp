@@ -163,12 +163,19 @@ unsigned int editDistance(string &pattern, string &text){
 
 
 string Trie::approximateWordSearch(string &word) const {
-	approx_search *info = (approx_search *)malloc(sizeof(approx_search));
-	info->min_dist = this->findInitK(word);
-	thread(suffixDFS,word,"",this->root.next,info).join();
-	string closest_word = info->word;
-	free(info);
-	return closest_word;
+	unsigned int *min_dist = (unsigned int *)malloc(sizeof(unsigned int));
+	*min_dist = this->findInitK(word);
+	list<string> *results = new list<string>;
+	thread(suffixDFS,word,"",this->root,min_dist,results).join();
+
+	cout << "[";
+	for (auto it = results->begin() ; it != results->end() ; it++)
+		cout << (*it) << " , ";
+
+	cout << "]\n";
+
+	delete results;
+	return "";
 }
 
 int findFirstElementPos(const node_t *arr){
@@ -179,41 +186,47 @@ int findFirstElementPos(const node_t *arr){
 	return -1;
 }
 
-void Trie::suffixDFS(const string &word, const string pref , node_t *arr, approx_search *info){
+void Trie::suffixDFS(const string &word, const string pref , node_t chr, unsigned int *min_dist, list<string> *results){
 	cout << this_thread::get_id() << " - NEW THREAD - " << pref << endl;
-
-	string preffix = pref;
+	string preffix = pref, tmp_word;
 	unsigned int dist = 0 , n_elems = 0;
 	int pos = 0;
 	list<thread> all_threads;
-	while( (n_elems = numberOfElements(arr)) == 1 &&  ((pos = findFirstElementPos(arr)) != -1) /* && arr[pos].eow)*/  ){
-		if (pos != -1){
+
+	while( ((n_elems = numberOfElements(chr.next)) == 1 &&  ((pos = findFirstElementPos(chr.next)) != -1) ) ){
+		if (!chr.eow){
 			preffix += (char)arrPosToChar(pos);
 			cout << this_thread::get_id() << " - Added letter : " << (char)arrPosToChar(pos) << ", word = " << preffix << endl;
-			if (!arr[pos].eow)
-				arr = arr[pos].next;
-			else{
-				cout << this_thread::get_id() << "Breaking, word = " << preffix << endl;
-				break;
-			}
+			chr = chr.next[pos];
+		}
+		else{
+			cout << this_thread::get_id() << "Breaking, word = " << preffix << endl;
+			break;
 		}
 	}
+	if (!chr.eow)
+		tmp_word = word.substr(0,preffix.length());
+	else
+		tmp_word = word;
 
-	string tmp_word = word.substr(0,preffix.length());
 	dist = editDistance(preffix , tmp_word);
 
 	flag.lock();
-	if ( dist <= info->min_dist && n_elems > 0){
-		if ( arr[pos].eow ){
-			cout << this_thread::get_id() << "Updating with " << preffix << endl;
-			info->min_dist = dist;
-			info->word = preffix;
+	if ( dist <= (*min_dist) && n_elems > 0){
+		if ( chr.eow ){
+			if (dist < (*min_dist) ){
+				cout << "		!!!ERASING LIST CONTENTS!!! \n";
+				results->clear();
+			}
+			cout << this_thread::get_id() << "Updating with " << preffix << ", DIST = " << dist <<  endl;
+			(*min_dist) = dist;
+			results->push_front( preffix );
 		}
 
 		for (unsigned int i = 0 ; i < ARR_SIZE ; i++){
-			if (arr[i].next != nullptr){
-				cout << this_thread::get_id() << " - FORK : m = " << info->min_dist << " curr : " << info->word << ", pref = " << preffix << ", dist = " << dist << ", chr = " << arrPosToChar(i) << endl;
-				all_threads.push_front(thread(&Trie::suffixDFS,word, preffix+(char)arrPosToChar(i), arr[i].next , info));
+			if (chr.next[i].next != nullptr){
+				cout << this_thread::get_id() << " - FORK : m = " << (*min_dist) << ", pref = " << preffix << ", dist = " << dist << ", chr = " << arrPosToChar(i) << endl;
+				all_threads.push_front(thread(&Trie::suffixDFS,word, preffix+(char)arrPosToChar(i), chr.next[i] , min_dist, results));
 			}
 		}
 
