@@ -49,7 +49,7 @@ public:
 
 	unsigned int findInitK(const std::string &word) const;
 
-	void static suffixDFS(const std::string &word, const std::string &pref , node_t *arr, approx_search *info);
+	void static suffixDFS(const std::string &word, const std::string pref , node_t *arr, approx_search *info);
 
 private:
 
