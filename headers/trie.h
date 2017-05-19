@@ -1,6 +1,9 @@
 #ifndef TRIE_H
 #define TRIE_H
 
+#include <list>
+#include <mutex>
+#include <thread>
 #include <string>
 #include <vector>
 #include <queue>
@@ -20,6 +23,13 @@ struct node_t{
 	node_t *next = nullptr;
 };
 
+struct approx_search{
+	unsigned int min_dist;
+	std::string word;
+};
+
+unsigned char charToArrPos(char chr);
+
 class Trie{
 
 
@@ -37,19 +47,15 @@ public:
 
 	void printArr(const node_t *arr) const;
 
+	unsigned int findInitK(const std::string &word) const;
+
+	void static suffixDFS(const std::string &word, const std::string &pref , node_t *arr, approx_search *info);
+
 private:
 
-	inline bool arrContainsChar(char &chr,const node_t *arr) { return arr[this->charToArrPos(chr)].next != NULL;}
-
-	unsigned int editDistance(const std::string &pattern,const  std::string &text) const;
-	unsigned int findInitK(const std::string &word) const;
-	unsigned char numberOfElements(const node_t *arr) const;
+	inline bool arrContainsChar(char &chr,const node_t *arr) { return arr[charToArrPos(chr)].next != NULL;}
 
 	int charExistsInArr(const char &chr, const node_t *arr) const;
-
-	unsigned char charToArrPos(char chr) const;
-	unsigned char arrPosToChar(char chr) const;
-
 };
 
 

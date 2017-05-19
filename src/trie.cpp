@@ -7,11 +7,7 @@
 
 using namespace std;
 
-void Trie::printArr(const node_t *arr) const{
-	for ( int i = 0 ; i < ARR_SIZE ; i++)
-		cout << this->arrPosToChar(i) << " - [ " << arr[i].eow << "|" << arr[i].next << "]\n";
-}
-
+static mutex flag;
 
 Trie::Trie(){
 	this->root.next = (node_t *)malloc(sizeof(node_t)*ARR_SIZE);
@@ -43,7 +39,7 @@ void Trie::insertWord(const string &word){
  * @return The array position of the character
  * @detail Time Complexity O(1), Space Complexity O(1)
  */
-unsigned char Trie::charToArrPos(char chr) const{
+unsigned char charToArrPos(char chr){
 	if ( (chr >= 65 && chr <= 90) || (chr >= 97 && chr <= 122) ) //Letter
 		return ( toupper(chr) - ALPHABET_BEGINNING );
 	else if ( chr >= 48 && chr <= 57 ) //Number
@@ -58,7 +54,7 @@ unsigned char Trie::charToArrPos(char chr) const{
  * @return The ASCII representation of the character
 * @detail Time Complexity O(1), Space Complexity O(1)
  */
-unsigned char Trie::arrPosToChar(char chr) const{
+unsigned char arrPosToChar(char chr){
 	if (chr >= 0 && chr < ALPHABET_SIZE) //Letter
 		return chr + ALPHABET_BEGINNING;
 	else if (chr >= ALPHABET_SIZE && chr < (ALPHABET_SIZE + NUMBER_SIZE) ) //Number
@@ -74,26 +70,23 @@ int main(){
 	string test1 = "ARVORE" , test2 = "ABELHA", test3 = "ABEDO", test4 = "ABORIGENE", test5 = "AMAR", test6 = "ABELHO";
 	trie.insertWord(test1); trie.insertWord(test2); trie.insertWord(test3);
 	trie.insertWord(test4); trie.insertWord(test5); trie.insertWord(test6);
-	unsigned int max = 4;
-	node_t * node = trie.findWordInSubtrie("PKLO", trie.root.next, max);
-	if(node != nullptr){
-		trie.printArr(node);
-		cout << "NOT NULL | MAX = " << max << endl;
-	}
-	else
-		cout << "NULL\n";
-	cout << "COMPLETED\n";
+	cout << "INIT = " << trie.findInitK("ALTS") << endl;
 
 	return 0;
 }
 
+
+void Trie::printArr(const node_t *arr) const{
+	for ( int i = 0 ; i < ARR_SIZE ; i++)
+		cout << arrPosToChar(i) << " - [ " << arr[i].eow << "|" << arr[i].next << "]\n";
+}
 
 
 /**
  * @brief Searches for the given string
  * @param[in] word Word to search for
  * @return True if string was found, false otherwise
- * @detail Time complexity is near O(m), where m is the string length, Space complexity O(1)
+ * @detail Time complexity is O(m), where m is the string length, Space complexity O(1)
  */
 bool Trie::exactWordSearch(string &word) const{
 	node_t *temp = this->root.next;
@@ -113,7 +106,7 @@ bool Trie::exactWordSearch(string &word) const{
  * @param[in] arr Base level to search
  * @return How many elements it has
  */
-unsigned char Trie::numberOfElements(const node_t *arr) const{
+unsigned char numberOfElements(const node_t *arr){
 	unsigned char cont = 0;
 	for (unsigned char i = 0 ; i < ARR_SIZE ; i++)
 		if (arr[i].next != nullptr)
@@ -129,7 +122,7 @@ unsigned char Trie::numberOfElements(const node_t *arr) const{
  * @return The edit distance between the two parameters
  * @detail From solution of the TP11
  */
-unsigned int Trie::editDistance(const string &pattern, const string &text) const{
+unsigned int editDistance(const string &pattern, const string &text){
 	int n=text.length();
 	vector<int> d(n+1);
 	int old, //current min distance?
@@ -156,25 +149,71 @@ unsigned int Trie::editDistance(const string &pattern, const string &text) const
 }
 
 string Trie::approximateWordSearch(string &word) const {
-	return word;
+	approx_search *info = (approx_search *)malloc(sizeof(approx_search));
+	info->min_dist = this->findInitK(word);
+	suffixDFS(word,"",this->root.next,info);
+
+	string closest_word = info->word;
+	free(info);
+	return closest_word;
 }
 
-//TODO Check if this works
+
+void Trie::suffixDFS(const string &word, const string &pref , node_t *arr, approx_search *info){
+	cout << "Running SuffixDFS()\n";
+	string preffix = pref;
+	unsigned int dist = 0 , pos = 0;
+	list<thread> threads;
+	while( numberOfElements(arr) == 1){
+		for (pos = 0 ; pos < ARR_SIZE ; pos++)
+			if ( arr[pos].next != nullptr){
+				preffix += (char)arrPosToChar(pos);
+				arr = arr[pos].next;
+				break;
+			}
+	}
+
+
+	flag.lock();
+	if ( (dist = editDistance(preffix , word.substr(0,preffix.length()))) < info->min_dist ){
+		info->min_dist = dist;
+		info->word = preffix;
+		flag.unlock();
+		for (unsigned int i = 0 ; i < ARR_SIZE ; i++)
+			if (arr[i].next != nullptr)
+				threads.push_front(thread(&Trie::suffixDFS,word, preffix, arr[pos].next , info));
+	}
+	else
+		flag.unlock();
+
+}
+
+/**
+ * @brief Finds the initial estimated edit distances
+ * @param[in] word Word to search for edit distance
+ * @return Estimated edit distance
+ */
 unsigned int Trie::findInitK(const std::string &word) const {
-	node_t *temp = this->root.next;
+	node_t *temp = this->root.next, *prev = temp;
 	unsigned int edit_dist = 0;
 	for( unsigned int i = 0 ; i < word.length() ; i++){
-		if ( temp[this->charToArrPos(word[i])] == nullptr ){ //does not have current character
-			unsigned int str_len = (word.length() - i -1);
-			string tmp = word.substr(i+1, str_len);
-			if ( (temp = this->findWordInSubtrie(tmp, temp, str_len)) != nullptr ){ //character exists in subtrie
+		unsigned char pos = charToArrPos(word[i]);
+
+		if ( temp[pos].next == nullptr ){ //does not have current character
+			unsigned int str_len = (word.length() - i);
+			string tmp = word.substr(i, str_len);
+			if ( (temp = this->findWordInSubtrie(tmp, prev, str_len)) != nullptr ) { //suffix exists in subtrie
 				edit_dist+=str_len;
 				i+=str_len;
 			}
-			else{
-				edit_dist+= (word.length() - i -1);
+			else{ //suffix does not exist
+				edit_dist += (word.length() - i);
 				break;
 			}
+		}
+		else{ //current character exists
+			prev = temp;
+			temp = temp[pos].next;
 		}
 	}
 
@@ -196,7 +235,6 @@ node_t *Trie::findWordInSubtrie(const string &word, node_t *arr, unsigned int &m
 	q.push(arr);
 	while( !q.empty() && max_depth > 0){
 		node_t * tmp = q.front();		q.pop();
-		this->printArr(tmp);
 		cont--;
 		if ( (pos = this->charExistsInArr(word[max_init-max_depth], tmp)) != -1){ //character found
 			max_depth = max_init - max_depth; //edit distance
@@ -227,10 +265,9 @@ node_t *Trie::findWordInSubtrie(const string &word, node_t *arr, unsigned int &m
  * @return Position in the array where the character occurs, or -1 if it does not occur
  */
 int Trie::charExistsInArr(const char &chr, const node_t *arr) const {
-	cout << "Searching chr = " << chr << endl;
 	int i = 0;
 	for (i = 0 ; i < ARR_SIZE ; i++){
-		if (arr[i].next != nullptr && arr[i].next[this->charToArrPos(chr)].next != nullptr && arr[i].eow == false)
+		if (arr[i].next != nullptr && arr[i].next[charToArrPos(chr)].next != nullptr && arr[i].eow == false)
 			return i;
 
 	}
