@@ -284,14 +284,14 @@ unsigned int Trie::findInitK(const std::string &word) const {
 			unsigned int str_len = (word.length() - i);
 			string tmp = word.substr(i, str_len);
 			if ( (ttmp = this->findWordInSubtrie(tmp, temp, &str_len)) != nullptr ) { //suffix exists in subtrie
-				//cout << "Found chr on subtrie " << word[i] << " ,str_len = " << str_len << " , edit_dist = " << edit_dist << endl;
 				temp = ttmp;
-				edit_dist+=str_len;
 				i+=str_len;
+				//cout << "Found chr on subtrie " << word[i] << " ,str_len = " << str_len << " , edit_dist = " << edit_dist << endl;
+				edit_dist+=str_len;
 				continue;
 			}
 			else{ //suffix does not exist
-				cout << "GONNA BREAK\n";
+				//cout << "GONNA BREAK\n";
 				break;
 			}
 		}
@@ -302,15 +302,11 @@ unsigned int Trie::findInitK(const std::string &word) const {
 	}
 
 	unsigned int min = 0;
-	cout << "Temp=  " << temp << " , temp.next = " << temp[pos].next << ", chr = " << arrPosToChar(pos) << endl;
-	if (!temp[pos].eow /*&& findFirstElementPos(temp[pos].next) != -1*/ ) {
-		//printArr(temp);
-		this->closestEOW(temp,min);
-	}
-	else{
-		//cout << "reached end of trie\n";
-		min = (word.length() - i - 1);
-	}
+	//cout << "Temp=  " << temp << " , temp.next = " << temp[pos].next << ", chr = " << arrPosToChar(pos) << endl;
+	this->closestEOW(temp,min);
+	if ( (i+min) < word.length()) //End of trie reached, but there is still words to search
+		min += (word.length() - i - 1);
+
 	//cout << "	MIN = " << min << " | EDIT DIST = " << edit_dist << endl;
 
 
