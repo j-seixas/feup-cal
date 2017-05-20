@@ -48,6 +48,7 @@ bool menu(Graph<T> &graph, GraphViewer *gv){
 		cout << endl;
 		if(option == 1) {
 			string streetName = getStreetName();
+			transform(streetName.begin(), streetName.end(), streetName.begin(), ::toupper);
 			if(graph.exactWordSearch(streetName)){
 				Vertex<T> * v = graph.cutStreet(streetName,n_nodes);
 				if ( v != NULL){
