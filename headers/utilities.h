@@ -9,9 +9,9 @@
 #include <map>
 #include <cmath>
 
-#define NODES_FILE "rsc/_nodes.txt"
-#define EDGES_FILE "rsc/_edges.txt"
-#define STREETS_FILE "rsc/_streets.txt"
+#define NODES_FILE "rsc/Nodes5.txt"
+#define EDGES_FILE "rsc/Edges5.txt"
+#define STREETS_FILE "rsc/Streets5.txt"
 
 using namespace std;
 
@@ -145,7 +145,7 @@ void loadStreets(Graph<T> &graph) {
 		getline(iss, streetName, delimiter);
 		iss >> delimiter;
 		getline(iss, isTwoWaysStr, '\n');
-		isTwoWays = (delimiter == 't');
+		isTwoWays = (delimiter == 'T');
 
 		for (Vertex<T> * vertex : graph.getVertexSet() ){
 			int i = 1;

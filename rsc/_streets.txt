@@ -1,25 +1,25 @@
-0;Autoestrada A29;true
-1;Autoestrada A28;true
-2;Avenida Boavista;true
-3;Rua do Flores;true
-4;Rua D Joao;true
-5;Rua do Dilema;false
-6;Avenida Cunha;true
-7;Rua Triste;false
-8;Rua D Dinis;true
-9;Rua do Amador;true
-10;Rua Vidal;true
-11;Rua da Muralha;false
-12;Rua da Pipoca;true
-13;Travessa S Joao;false
-14;Rua Mexicana;false
-15;Avenida Sobral;false
-16;Travessa D Jose;false
-17;Travessa D Dinis;false
-18;Rua Dr Antonio;false
-19;Rua Dr Jose;false
-20;Rua Encavada;false
-21;Rua da vida;false
-22;Rua das Capas;false
-23;Rua da Vida;false
-24;Rua Dr Rui;false
+0;Autoestrada A29;True
+1;Autoestrada A28;True
+2;Avenida Boavista;True
+3;Rua do Flores;True
+4;Rua D Joao;True
+5;Rua do Dilema;False
+6;Avenida Cunha;True
+7;Rua Triste;False
+8;Rua D Dinis;True
+9;Rua do Amador;True
+10;Rua Vidal;True
+11;Rua da Muralha;False
+12;Rua da Pipoca;True
+13;Travessa S Joao;False
+14;Rua Mexicana;False
+15;Avenida Sobral;False
+16;Travessa D Jose;False
+17;Travessa D Dinis;False
+18;Rua Dr Antonio;False
+19;Rua Dr Jose;False
+20;Rua Encavada;False
+21;Rua da vida;False
+22;Rua das Capas;False
+23;Rua da Vida;False
+24;Rua Dr Rui;False
