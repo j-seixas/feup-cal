@@ -1,0 +1,25 @@
+0;Autoestrada A29;True
+1;Autoestrada A28;True
+2;Avenida Boavista;True
+3;Rua do Flores;True
+4;Rua D Joao;True
+5;Rua do Dilema;False
+6;Avenida Cunha;True
+7;Rua Triste;False
+8;Rua D Dinis;True
+9;Rua do Amador;True
+10;Rua Vidal;True
+11;Rua da Muralha;False
+12;Rua da Pipoca;True
+13;Travessa S Joao;False
+14;Rua Mexicana;False
+15;Avenida Sobral;False
+16;Travessa D Jose;False
+17;Travessa D Dinis;False
+18;Rua Dr Antonio;False
+19;Rua Dr Jose;False
+20;Rua Encavada;False
+21;Rua da vida;False
+22;Rua das Capas;False
+23;Rua da Vida;False
+24;Rua Dr Rui;False
