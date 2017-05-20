@@ -167,6 +167,8 @@ public:
 	inline unsigned long int getCounter() const {return this->counter;}
 	inline list<Vertex<T> *> &getCarsDest() {return this->cars_destination;}
 	inline void insertWordToTrie(string &word) {this->trie.insertWord(word);}
+	inline bool exactWordSearch(string &word) const {return this->trie.exactWordSearch(word);}
+	inline list<string>* approximateWordSearch(string &word) const { return this->trie.approximateWordSearch(word); }
 	inline void insertNameToEdge(const string &word, Edge<T> *ptr) { this->nameToEdge.insert(std::pair< string,Edge<T>* >(word, ptr)); }
 	Vertex<T>* getVertexByIDMask(long long int id) const;
 
