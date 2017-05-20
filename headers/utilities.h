@@ -3,6 +3,7 @@
 
 #include "graph.h"
 #include <fstream>
+#include <algorithm>
 #include <sstream>
 #include <string>
 #include <map>
@@ -155,7 +156,9 @@ void loadStreets(Graph<T> &graph) {
 					ed->setTwoWays(isTwoWays);
 					ed->setSourc(vertex);
 					streetName += to_string(i);
-					graph.insertNameToEdge(streetName, ed);
+					string tmp = streetName;
+					transform(tmp.begin(), tmp.end(), tmp.begin(), ::toupper);
+					graph.insertNameToEdge(tmp, ed);
 					graph.insertWordToTrie(streetName);
 					if (isTwoWays) {
 						streetName+="B";

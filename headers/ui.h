@@ -49,6 +49,7 @@ bool menu(Graph<T> &graph, GraphViewer *gv){
 		if(option == 1) {
 			string streetName = getStreetName();
 			if(graph.exactWordSearch(streetName)){
+				transform(streetName.begin(), streetName.end(), streetName.begin(), ::toupper);
 				Vertex<T> * v = graph.cutStreet(streetName,n_nodes);
 				if ( v != NULL){
 					graph.updateGraphViewer(gv);
