@@ -137,7 +137,7 @@ int main(){
 	string insert1 = "ARVORE" , insert2 = "ABELHA", insert3 = "ABEDO", insert4 = "ABORIGENE", insert5 = "AMAR", insert6 = "ABELHO",
 				 insert7 = "AMARAS", insert8 = "AMADOR", insert9 = "ABORINA", insert10 = "AR",
 				 test1 = "ARINR",  test2 = "ARI", test3 = "ARVOREDO", test4 = "ABOLA", test5 = "ABRLI",
-				 test6 = "ZBALE", test7 = "ABRA", test8 = "ABELHUDO", test9 = "CABEDAL";
+				 test6 = "ZBALE", test7 = "ABRA", test8 = "ABELHUDO", test9 = "CABEDAL", test10 = "ZXYKX";
 	trie.insertWord(insert1); trie.insertWord(insert2); trie.insertWord(insert3);
 	trie.insertWord(insert4); trie.insertWord(insert5); trie.insertWord(insert6);
 	trie.insertWord(insert7); trie.insertWord(insert8); trie.insertWord(insert9);
@@ -161,6 +161,8 @@ int main(){
 	cout << "	Expected : [ABELHO]\n";
 	trie.approximateWordSearch(test9);
 	cout << "	Expected : [ABEDO]\n";
+	trie.approximateWordSearch(test10);
+	cout << "	Expected : [?]\n";
 
 
 	// ifstream in("names.txt");
@@ -209,15 +211,15 @@ bool Trie::exactWordSearch(string &word) const{
 list<string> *Trie::approximateWordSearch(string &word) const {
 	unsigned int *min_dist = (unsigned int *)malloc(sizeof(unsigned int));
 	*min_dist = this->findInitK(word);
-	cout << word << " initial K = " << (*min_dist) << endl;
+	//cout << word << " initial K = " << (*min_dist) << endl;
 	list<string> *results = new list<string>;
 	thread(suffixDFS,word,"",this->root,min_dist,results).join();
 
-	cout << "[";
-	for (auto it = results->begin() ; it != results->end() ; it++)
-		cout << (*it) << " , ";
-
-	cout << "]\n";
+	//cout << "[";
+	//for (auto it = results->begin() ; it != results->end() ; it++)
+	//	cout << (*it) << " , ";
+//
+	//cout << "]\n";
 
 	return results;
 }
