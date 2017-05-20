@@ -144,17 +144,19 @@ void loadStreets(Graph<T> &graph) {
 		getline(iss, streetName, delimiter);
 		iss >> delimiter;
 		getline(iss, isTwoWaysStr, '\n');
-		isTwoWays = (delimiter == 'T');
+		isTwoWays = (delimiter == 't');
+
 		for (Vertex<T> * vertex : graph.getVertexSet() ){
-			for( pair<long long int , Edge<T> *> p : vertex->getAdjacent() )
+			int i = 1;
+			for( pair<long long int , Edge<T> *> p : vertex->getAdjacent() ){
 				if (p.second->getID() == edgeID){
 					Edge<T> *ed = p.second;
-					ed->setName(streetName);
+					ed->setName(streetName + to_string(i));
 					ed->setTwoWays(isTwoWays);
 					ed->setSourc(vertex);
+					streetName += to_string(i);
 					graph.insertNameToEdge(streetName, ed);
 					graph.insertWordToTrie(streetName);
-					cout << "Inserted : |" << streetName << "|\n";
 					if (isTwoWays) {
 						streetName+="B";
 						Edge<T>* oppositeEdge = new Edge<T>(vertex, (-1 * ed->getID()), calculateDistance(vertex, ed->getDest()));
@@ -162,7 +164,9 @@ void loadStreets(Graph<T> &graph) {
 						ed->getDest()->addEdge(oppositeEdge);
 						graph.insertNameToEdge(streetName, oppositeEdge);
 						graph.insertWordToTrie(streetName);
+					}
 				}
+				i++;
 			}
 		}
 	}
