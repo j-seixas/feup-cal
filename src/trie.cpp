@@ -143,16 +143,42 @@ int main(){
 	trie.insertWord(insert7); trie.insertWord(insert8); trie.insertWord(insert9);
 	trie.insertWord(insert10);
 
-	cout << "WORD = " << trie.approximateWordSearch(test1) << " , expected ARVORE" << endl;
-	//cout << "WORD = " << trie.approximateWordSearch(test2) << " , expected 4" << endl;
-	//cout << "WORD = " << trie.approximateWordSearch(test3) << " , expected 2" << endl;
-	//cout << "WORD = " << trie.approximateWordSearch(test4) << " , expected 4" << endl;
-	//cout << "WORD = " << trie.approximateWordSearch(test5) << " , expected 3" << endl;
-	//cout << "WORD = " << trie.approximateWordSearch(test6) << " , expected 4" << endl;
-	//cout << "WORD = " << trie.approximateWordSearch(test7) << " , expected 3" << endl;
+	trie.approximateWordSearch(test1);
+	cout << "	Expected : [ARVORE, AMAR, AR]\n";
+	trie.approximateWordSearch(test2);
+	cout << "	Expected : [AR]\n";
+	trie.approximateWordSearch(test3);
+	cout << "	Expected : [ARVORE]\n";
+	trie.approximateWordSearch(test4);
+	cout << "	Expected : [ABORINA, ABEDO]\n";
+	trie.approximateWordSearch(test5);
+	cout << "	Expected : [ABEDO, AR]\n";
+	trie.approximateWordSearch(test6);
+	cout << "	Expected : [AMAR, ABEDO, AR]\n";
+	trie.approximateWordSearch(test7);
+	cout << "	Expected : [AR]\n";
 
 
-	return 0;
+	// ifstream in("names.txt");
+	// ofstream out("ExactSearchResults.csv");
+	// string line;
+	//
+	// while( getline(in	, line) )
+	// 	trie.insertWord(line);
+	//
+	// in.close();
+	// in.open("names.txt");
+	//
+	// while ( getline(in,line) ){
+	// 	std::chrono::high_resolution_clock::time_point current = std::chrono::high_resolution_clock::now();
+	// 	trie.exactWordSearch(line);
+	// 	std::chrono::high_resolution_clock::time_point final = std::chrono::high_resolution_clock::now();
+	// 	out << line.length() << ";" << std::chrono::duration_cast<std::chrono::duration<double>>(final - current).count() <<endl;
+	//
+	// }
+	// in.close();
+	// out.close();
+	// return 0;
 }
 */
 
@@ -219,27 +245,21 @@ void Trie::suffixDFS(const string &word, const string pref , node_t chr, unsigne
 	}
 
 	dist = editDistance(preffix , tmp_word);
-
 	flag.lock();
-	if ( dist <= (*min_dist) && n_elems > 0){
-		if ( chr.eow ){
+	if ( dist <= (*min_dist) || chr.eow ){
+		if ( chr.eow && dist <= (*min_dist)){
 			if (dist < (*min_dist) ){
 				//cout << "		!!!ERASING LIST CONTENTS!!! \n";
 				results->clear();
+				(*min_dist) = dist;
 			}
 			//cout << this_thread::get_id() << "Updating with " << preffix << ", DIST = " << dist <<  endl;
-			(*min_dist) = dist;
 			results->push_front( preffix );
 		}
-
-		for (unsigned int i = 0 ; i < ARR_SIZE ; i++){
-			if (chr.next != nullptr && chr.next[i].next != nullptr){
-				//cout << this_thread::get_id() << " - FORK : m = " << (*min_dist) << ", pref = " << preffix << ", dist = " << dist << ", chr = " << arrPosToChar(i) << endl;
+		flag.unlock();
+		for (unsigned int i = 0 ; i < ARR_SIZE ; i++)
+			if (chr.next != nullptr && chr.next[i].next != nullptr)
 				all_threads.push_front(thread(&Trie::suffixDFS,word, preffix+(char)arrPosToChar(i), chr.next[i] , min_dist, results));
-			}
-		}
-
-			flag.unlock();
 	}
 	else
 		flag.unlock();
