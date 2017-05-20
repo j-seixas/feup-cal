@@ -20,7 +20,7 @@ unsigned char arrPosToChar(char chr){
 		return chr + ALPHABET_BEGINNING;
 	else if (chr >= ALPHABET_SIZE && chr < (ALPHABET_SIZE + NUMBER_SIZE) ) //Number
 		return (chr + NUMBER_BEGGINING) - ALPHABET_SIZE;
-	else //Space
+	else  //Space
 		return 32;
 }
 
@@ -127,8 +127,12 @@ unsigned char Trie::charToArrPos(char chr) const{
 		return ( toupper(chr) - ALPHABET_BEGINNING );
 	else if ( chr >= 48 && chr <= 57 ) //Number
 		return (ALPHABET_SIZE + (chr - NUMBER_BEGGINING) );
-	else //Space
+	else if (chr == 32) //Space
 		return (ALPHABET_SIZE + 10);
+	else{
+		cout << "!UNKNOWN LETTER!\n	ABORTING \n";
+		exit(1);
+	}
 }
 
 /*
