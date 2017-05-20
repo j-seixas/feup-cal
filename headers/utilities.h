@@ -145,23 +145,29 @@ void loadStreets(Graph<T> &graph) {
 		iss >> delimiter;
 		getline(iss, isTwoWaysStr, '\n');
 		isTwoWays = (delimiter == 'T');
+
 		for (Vertex<T> * vertex : graph.getVertexSet() ){
-			for( pair<long long int , Edge<T> *> p : vertex->getAdjacent() )
+			int i = 1;
+			for( pair<long long int , Edge<T> *> p : vertex->getAdjacent() ){
 				if (p.second->getID() == edgeID){
 					Edge<T> *ed = p.second;
-					ed->setName(streetName);
+					ed->setName(streetName + to_string(i));
 					ed->setTwoWays(isTwoWays);
 					ed->setSourc(vertex);
-					graph.insertNameToEdge(streetName, ed);
-					graph.insertWordToTrie(streetName);
+					graph.insertNameToEdge(streetName + to_string(i), ed);
+					string triename = streetName + to_string(i);
+					graph.insertWordToTrie(triename);
 					if (isTwoWays) {
-						streetName+="B";
+						//streetName+="B";
 						Edge<T>* oppositeEdge = new Edge<T>(vertex, (-1 * ed->getID()), calculateDistance(vertex, ed->getDest()));
-						oppositeEdge->setName(streetName);
+						oppositeEdge->setName(streetName + to_string(i) + "B");
 						ed->getDest()->addEdge(oppositeEdge);
-						graph.insertNameToEdge(streetName, oppositeEdge);
-						graph.insertWordToTrie(streetName);
+						graph.insertNameToEdge(streetName + to_string(i) + "B", oppositeEdge);
+						triename = streetName + to_string(i) + "B";
+						graph.insertWordToTrie(triename);
+					}
 				}
+				i++;
 			}
 		}
 	}
