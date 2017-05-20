@@ -48,10 +48,24 @@ bool menu(Graph<T> &graph, GraphViewer *gv){
 		cout << endl;
 		if(option == 1) {
 			string streetName = getStreetName();
-			Vertex<T> * v = graph.cutStreet(streetName,n_nodes);
-			if ( v != NULL){
-				graph.updateGraphViewer(gv);
-				carsMovingMenu(graph,v,gv,n_nodes);
+			if(graph.exactWordSearch(streetName)){
+				Vertex<T> * v = graph.cutStreet(streetName,n_nodes);
+				if ( v != NULL){
+					graph.updateGraphViewer(gv);
+					carsMovingMenu(graph,v,gv,n_nodes);
+				}
+			} else {
+				list<string>* similarNames = graph.approximateWordSearch(streetName);
+				auto it = similarNames->begin();
+				auto ite = similarNames->end();
+				if(it != ite){
+					cout << "Street name not found. Did you mean any of these streets?\n";
+					while(it != ite){
+						cout << "    " << *it << endl;
+						it++;
+					}
+				} else
+					cout << "Street name found. No similar names found.\n";
 			}
 			return true;
 		} else if(option == 2) {
