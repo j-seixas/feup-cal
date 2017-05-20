@@ -151,11 +151,12 @@ template<class T>
 class Graph {
 	unordered_set<Vertex<T> *,hashFuncs,hashFuncs> vertexSet;
 	map<string, Edge<T>*> nameToEdge;
-	Trie trie;
+	Trie *trie;
 	list<Vertex<T> *> cars_destination;
 	unsigned long int counter = 0;
 
 public:
+	Graph() { this->trie = new Trie; }
 	void addVertex(Vertex<T> *v);
 	bool addEdge(const T &sourc, const T &dest, int w);
 	bool addEdge(Edge<T>* edge, Vertex<T>* from);
@@ -166,9 +167,9 @@ public:
 	inline int getNumVertex() const {return this->vertexSet.size();}
 	inline unsigned long int getCounter() const {return this->counter;}
 	inline list<Vertex<T> *> &getCarsDest() {return this->cars_destination;}
-	inline void insertWordToTrie(string &word) {this->trie.insertWord(word);}
-	inline bool exactWordSearch(string &word) const {return this->trie.exactWordSearch(word);}
-	inline list<string>* approximateWordSearch(string &word) const { return this->trie.approximateWordSearch(word); }
+	inline void insertWordToTrie(string &word) {this->trie->insertWord(word);}
+	inline bool exactWordSearch(string &word) const {return this->trie->exactWordSearch(word);}
+	inline list<string>* approximateWordSearch(string &word) const { return this->trie->approximateWordSearch(word); }
 	inline void insertNameToEdge(const string &word, Edge<T> *ptr) { this->nameToEdge.insert(std::pair< string,Edge<T>* >(word, ptr)); }
 	Vertex<T>* getVertexByIDMask(long long int id) const;
 
