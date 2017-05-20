@@ -131,13 +131,13 @@ unsigned char Trie::charToArrPos(char chr) const{
 		return (ALPHABET_SIZE + 10);
 }
 
-
+/*
 int main(){
 	Trie trie;
 	string insert1 = "ARVORE" , insert2 = "ABELHA", insert3 = "ABEDO", insert4 = "ABORIGENE", insert5 = "AMAR", insert6 = "ABELHO",
 				 insert7 = "AMARAS", insert8 = "AMADOR", insert9 = "ABORINA", insert10 = "AR",
 				 test1 = "ARINR",  test2 = "ARI", test3 = "ARVOREDO", test4 = "ABOLA", test5 = "ABRLI",
-				 test6 = "ZBALE", test7 = "ABRA", test8 = "ABELHUDO";
+				 test6 = "ZBALE", test7 = "ABRA", test8 = "ABELHUDO", test9 = "CABEDAL";
 	trie.insertWord(insert1); trie.insertWord(insert2); trie.insertWord(insert3);
 	trie.insertWord(insert4); trie.insertWord(insert5); trie.insertWord(insert6);
 	trie.insertWord(insert7); trie.insertWord(insert8); trie.insertWord(insert9);
@@ -159,6 +159,8 @@ int main(){
 	cout << "	Expected : [AR]\n";
 	trie.approximateWordSearch(test8);
 	cout << "	Expected : [ABELHO]\n";
+	trie.approximateWordSearch(test9);
+	cout << "	Expected : [ABEDO]\n";
 
 
 	// ifstream in("names.txt");
@@ -182,6 +184,7 @@ int main(){
 	// out.close();
 	// return 0;
 }
+*/
 
 void Trie::printArr(const node_t *arr) const{
 	for ( int i = 0 ; i < ARR_SIZE && arr != nullptr ; i++)
