@@ -31,7 +31,7 @@ unsigned char arrPosToChar(char chr){
  */
 unsigned char numberOfElements(const node_t arr){
 	unsigned char cont = 0;
-	for (unsigned char i = 0 ; i < ARR_SIZE ; i++)
+	for (unsigned char i = 0 ; i < ARR_SIZE && (arr.next != nullptr || arr.eow); i++)
 		if (arr.eow || arr.next[i].next != nullptr || arr.next[i].eow)
 			cont++;
 
@@ -103,7 +103,7 @@ int Trie::charExistsInArr(const char &chr, const node_t *arr) const {
 }
 
 Trie::Trie(){
-	this->root.next = (node_t *)malloc(sizeof(node_t)*ARR_SIZE);
+	this->root.next = new node_t[ARR_SIZE];
 	this->root.eow  = false;
 }
 
@@ -113,7 +113,7 @@ void Trie::insertWord(const string &word){
 	for (i = 0 ; i < word.length()-1 ; i++){
 		unsigned char pos = charToArrPos(word[i]);
 		if (temp[pos].next == nullptr )
-			temp[pos].next = (node_t*)malloc(sizeof(node_t)*ARR_SIZE);
+			temp[pos].next = new node_t[ARR_SIZE];
 
 		temp = temp[pos].next;
 	}
@@ -135,62 +135,45 @@ unsigned char Trie::charToArrPos(char chr) const{
 	}
 }
 
-/*
+
 int main(){
 	Trie trie;
-	string insert1 = "ARVORE" , insert2 = "ABELHA", insert3 = "ABEDO", insert4 = "ABORIGENE", insert5 = "AMAR", insert6 = "ABELHO",
-				 insert7 = "AMARAS", insert8 = "AMADOR", insert9 = "ABORINA", insert10 = "AR",
-				 test1 = "ARINR",  test2 = "ARI", test3 = "ARVOREDO", test4 = "ABOLA", test5 = "ABRLI",
-				 test6 = "ZBALE", test7 = "ABRA", test8 = "ABELHUDO", test9 = "CABEDAL", test10 = "ZXYKX";
-	trie.insertWord(insert1); trie.insertWord(insert2); trie.insertWord(insert3);
-	trie.insertWord(insert4); trie.insertWord(insert5); trie.insertWord(insert6);
-	trie.insertWord(insert7); trie.insertWord(insert8); trie.insertWord(insert9);
-	trie.insertWord(insert10);
+	//vector<string> words = {"ARVORE,"ABELHA,"ABEDO,"ABORIGENE,"AMAR,"ABELHO,"AMARAS,"AMADOR,"ABORINA,"AR" };
+	vector<string> words = {"Autoestrada A29","Autoestrada A28","Avenida Boavista","Rua do Flores","Rua D Joao",
+		"Rua do Dilema","Avenida Cunha","Rua Triste","Rua D Dinis","Rua do Amador","Rua Vidal","Rua da Muralha",
+		"Rua da Pipoca","Travessa S Joao","Rua Mexicana","Avenida Sobral","Travessa D Jose","Travessa D Dinis",
+		"Rua Dr Antonio","Rua Dr Jose","Rua Encavada","Rua da vida","Rua das Capas","Rua da Vida","Rua Dr Rui",
+		"Rua Dr Rui"};
+
+	//test1 = "ARINR",  test2 = "ARI", test3 = "ARVOREDO", test4 = "ABOLA", test5 = "ABRLI",
+	//test6 = "ZBALE", test7 = "ABRA", test8 = "ABELHUDO", test9 = "CABEDAL", test10 = "ZXYKX";
+	string test1 = "134";
+
+	for (string w : words)
+		trie.insertWord(w);
 
 	trie.approximateWordSearch(test1);
-	cout << "	Expected : [ARVORE, AMAR, AR]\n";
-	trie.approximateWordSearch(test2);
-	cout << "	Expected : [AR]\n";
-	trie.approximateWordSearch(test3);
-	cout << "	Expected : [ARVORE]\n";
-	trie.approximateWordSearch(test4);
-	cout << "	Expected : [ABELHA]\n";
-	trie.approximateWordSearch(test5);
-	cout << "	Expected : [ABELHO , ABELHA , ABEDO , AR]\n";
-	trie.approximateWordSearch(test6);
-	cout << "	Expected : [ABELHA, ABELHO, AMAR, ABEDO, AR]\n";
-	trie.approximateWordSearch(test7);
-	cout << "	Expected : [AR]\n";
-	trie.approximateWordSearch(test8);
-	cout << "	Expected : [ABELHO]\n";
-	trie.approximateWordSearch(test9);
-	cout << "	Expected : [ABEDO]\n";
-	trie.approximateWordSearch(test10);
-	cout << "	Expected : [?]\n";
-
-
-	// ifstream in("names.txt");
-	// ofstream out("ExactSearchResults.csv");
-	// string line;
-	//
-	// while( getline(in	, line) )
-	// 	trie.insertWord(line);
-	//
-	// in.close();
-	// in.open("names.txt");
-	//
-	// while ( getline(in,line) ){
-	// 	std::chrono::high_resolution_clock::time_point current = std::chrono::high_resolution_clock::now();
-	// 	trie.exactWordSearch(line);
-	// 	std::chrono::high_resolution_clock::time_point final = std::chrono::high_resolution_clock::now();
-	// 	out << line.length() << ";" << std::chrono::duration_cast<std::chrono::duration<double>>(final - current).count() <<endl;
-	//
-	// }
-	// in.close();
-	// out.close();
-	// return 0;
+	cout << "	Expected : [RUA DO AMADOR]\n";
+	// trie.approximateWordSearch(test2);
+	// cout << "	Expected : [AR]\n";
+	// trie.approximateWordSearch(test3);
+	// cout << "	Expected : [ARVORE]\n";
+	// trie.approximateWordSearch(test4);
+	// cout << "	Expected : [ABELHA]\n";
+	// trie.approximateWordSearch(test5);
+	// cout << "	Expected : [ABELHO , ABELHA , ABEDO , AR]\n";
+	// trie.approximateWordSearch(test6);
+	// cout << "	Expected : [ABELHA, ABELHO, AMAR, ABEDO, AR]\n";
+	// trie.approximateWordSearch(test7);
+	// cout << "	Expected : [AR]\n";
+	// trie.approximateWordSearch(test8);
+	// cout << "	Expected : [ABELHO]\n";
+	// trie.approximateWordSearch(test9);
+	// cout << "	Expected : [ABEDO]\n";
+	// trie.approximateWordSearch(test10);
+	// cout << "	Expected : [ABEDO, AMAR, AR]\n";
 }
-*/
+
 
 void Trie::printArr(const node_t *arr) const{
 	for ( int i = 0 ; i < ARR_SIZE && arr != nullptr ; i++)
@@ -213,17 +196,17 @@ bool Trie::exactWordSearch(string &word) const{
 
 
 list<string> *Trie::approximateWordSearch(string &word) const {
-	unsigned int *min_dist = (unsigned int *)malloc(sizeof(unsigned int));
+	unsigned int *min_dist = new unsigned int;
 	*min_dist = this->findInitK(word);
 	//cout << word << " initial K = " << (*min_dist) << endl;
 	list<string> *results = new list<string>;
 	thread(suffixDFS,word,"",this->root,min_dist,results).join();
 
-	//cout << "[";
-	//for (auto it = results->begin() ; it != results->end() ; it++)
-	//	cout << (*it) << " , ";
-//
-	//cout << "]\n";
+	cout << "[";
+	for (auto it = results->begin() ; it != results->end() ; it++)
+		cout << (*it) << " , ";
+
+	cout << "]\n";
 
 	return results;
 }
