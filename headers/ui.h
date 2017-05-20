@@ -21,7 +21,7 @@ void  carsMovingMenu( Graph<T> &graph , Vertex<T> *sourc , GraphViewer *gv, unsi
 			if (chr == ' ')
 				run_all = true;
 		}
-		
+
 		std::chrono::high_resolution_clock::time_point current = std::chrono::high_resolution_clock::now();
 		graph.Astar(sourc,dest,n_nodes);
 		cout << "	A* took " << std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - current).count() << "s \n";
@@ -31,7 +31,7 @@ void  carsMovingMenu( Graph<T> &graph , Vertex<T> *sourc , GraphViewer *gv, unsi
 		}
 		else{
 			dest->setReachable(false);
-			cout << "No path found for " << sourc->getIDMask() << " -> " << dest->getIDMask() << "\n"; 
+			cout << "No path found for " << sourc->getIDMask() << " -> " << dest->getIDMask() << "\n";
 		}
 		graph.updateGraphViewer(gv);
 	}
@@ -53,7 +53,6 @@ bool menu(Graph<T> &graph, GraphViewer *gv){
 				graph.updateGraphViewer(gv);
 				carsMovingMenu(graph,v,gv,n_nodes);
 			}
-			graph.show_name = true;
 			return true;
 		} else if(option == 2) {
 			graph.resetGraph();

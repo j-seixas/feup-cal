@@ -8,9 +8,9 @@
 #include <map>
 #include <cmath>
 
-#define NODES_FILE "rsc/Nodes5.txt"
-#define EDGES_FILE "rsc/Edges5.txt"
-#define STREETS_FILE "rsc/Streets5.txt"
+#define NODES_FILE "rsc/Nodes3.txt"
+#define EDGES_FILE "rsc/Edges3.txt"
+#define STREETS_FILE "rsc/Streets3.txt"
 
 using namespace std;
 
@@ -150,15 +150,14 @@ void loadStreets(Graph<T> &graph) {
 				if (p.second->getID() == edgeID){
 					Edge<T> *ed = p.second;
 					ed->setName(streetName);
-					ed->setNameMask( nextStreetName() );
 					ed->setTwoWays(isTwoWays);
+					ed->setSourc(vertex);
 					graph.insertNameToEdge(streetName, ed);
 					graph.insertWordToTrie(streetName);
 					if (isTwoWays) {
 						streetName+="B";
 						Edge<T>* oppositeEdge = new Edge<T>(vertex, (-1 * ed->getID()), calculateDistance(vertex, ed->getDest()));
 						oppositeEdge->setName(streetName);
-						oppositeEdge->setNameMask(nextStreetName());
 						ed->getDest()->addEdge(oppositeEdge);
 						graph.insertNameToEdge(streetName, oppositeEdge);
 						graph.insertWordToTrie(streetName);

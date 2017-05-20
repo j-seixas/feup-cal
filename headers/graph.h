@@ -88,6 +88,7 @@ public:
 */
 template<class T>
 class Edge {
+	Vertex<T> *sourc;
 	Vertex<T> * dest;
 	unsigned int weight; //its in m
 	T ID;
@@ -97,7 +98,6 @@ class Edge {
 	bool isTwoWays;
 	bool is_cut;
 
-	string name_mask;
 	int graph_ID;
 	bool is_path  = false;
 public:
@@ -112,9 +112,9 @@ public:
 
 	inline void setPath(bool p) {this->is_path = p;}
 	inline void setName(string s) {streetName = s;}
-	inline void setNameMask(string s) {name_mask = s;}
 	inline void setTwoWays(bool b) {isTwoWays = b;}
 	inline void setGraphID(int x) {this->graph_ID = x;}
+	inline void setSourc(Vertex<T> *sourc) {this->sourc = sourc;}
 
 	inline int getGraphID() {return this->graph_ID;}
 	inline T getID() const {return this->ID;}
@@ -123,7 +123,7 @@ public:
 	inline unsigned int getMaxCars() const {return this->max_number_cars;}
 	inline unsigned int getWeight() const {return this->weight;}
 	inline Vertex<T>* getDest() {return this->dest;}
-	inline string getNameMask() const {return this->name_mask;}
+	inline Vertex<T>* getSourc() {return this->sourc;}
 
 	inline bool operator<(const Edge<T> e) {return this->ID < e.ID;}
 
@@ -156,7 +156,6 @@ class Graph {
 	unsigned long int counter = 0;
 
 public:
-	bool show_name = true;
 	void addVertex(Vertex<T> *v);
 	bool addEdge(const T &sourc, const T &dest, int w);
 	bool addEdge(Edge<T>* edge, Vertex<T>* from);
@@ -177,7 +176,7 @@ public:
 	void generateCarPaths( Vertex<T> *v, unsigned long int &n_nodes);
 	void Astar(Vertex<T> *sourc, Vertex<T> *dest,const unsigned long int NODES_LIMIT);
 	bool moveCar(Edge<T> &from, long long int &car, Edge<T> &to);
-	Vertex<T> * cutStreet(string streetName, unsigned long int &n_nodes);
+	Vertex<T> * cutStreet(string &streetName, unsigned long int &n_nodes);
 	void initDestinations();
 	void initializeGraphViewer(GraphViewer *gv) const;
 	void updateGraphViewer(GraphViewer *gv) const;
@@ -219,19 +218,15 @@ void Graph<T>::generateCarPaths(Vertex<T> *v, unsigned long int &n_nodes) {
 	@detail Time Complexity O(V+E) , Space Complexity O(1)
 */
 template<class T>
-Vertex<T> * Graph<T>::cutStreet(string streetName, unsigned long int &n_nodes) {
-	for (Vertex<T> * vertex : this->vertexSet) {
-		for(pair<long long int , Edge<T>* > p : vertex->adjacent){
-			Edge<T> * edge = p.second;
-			if (edge->getNameMask() == streetName) {
-				this->resetAlgorithmVars();
-				this->generateCarPaths(edge->dest, n_nodes);
-				edge->cutRoad();
-				this->show_name = false;
-				return vertex;
-			}
-		}
+Vertex<T> * Graph<T>::cutStreet(string &streetName, unsigned long int &n_nodes) {
+	auto it = this->nameToEdge.find(streetName);
+	if ( it != this->nameToEdge.end() ) { //Edge found
+		this->resetAlgorithmVars();
+		this->generateCarPaths(it->second->dest, n_nodes);
+		it->second->cutRoad();
+		return it->second->sourc;
 	}
+
 	return NULL;
 }
 
@@ -272,13 +267,11 @@ void Graph<T>::initializeGraphViewer(GraphViewer *gv) const {
 	}
 	for (Vertex<T> * node : this->vertexSet) {
 		for (pair<long long int, Edge<T>* > p : node->getAdjacent()) {
-			string label = ( p.second->getNameMask() + " " + to_string(p.second->curr_number_cars) + "/" + to_string(p.second->getMaxCars()) + " " + to_string(p.second->getWeight()) + "m. ");
+			string label = ( p.second->getName() + " " + to_string(p.second->curr_number_cars) + "/" + to_string(p.second->getMaxCars()) + " " + to_string(p.second->getWeight()) + "m. ");
 			gv->addEdge(ID, node->getIDMask(), (p.second->dest)->getIDMask(), EdgeType::DIRECTED);
 			gv->setEdgeLabel(ID, label);
 			gv->setEdgeThickness(ID,1);
 			p.second->setGraphID(ID);
-			if( p.second->ID < 0)
-				cout << "Edge " << p.second->name_mask << ", negative\n";
 			ID++;
 		}
 	}
@@ -296,7 +289,7 @@ void Graph<T>::updateGraphViewer( GraphViewer *gv) const{
 		gv->setVertexColor(node->id_mask, WHITE);
 		for (pair<long long int , Edge<T> *> p : node->adjacent){
 			Edge<T> * edge = p.second;
-			string label = ( edge->getNameMask() + " " + to_string(edge->curr_number_cars) + "/" + to_string(edge->getMaxCars()) + " " + to_string(edge->getWeight()) + "m. ");
+			string label = ( edge->getName() + " " + to_string(edge->curr_number_cars) + "/" + to_string(edge->getMaxCars()) + " " + to_string(edge->getWeight()) + "m. ");
 			gv->setEdgeLabel(edge->getGraphID(), label);
 			if (edge->isPath()){
 				gv->setEdgeThickness(edge->getGraphID(),12);
