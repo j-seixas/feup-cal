@@ -103,7 +103,7 @@ int Trie::charExistsInArr(const char &chr, const node_t *arr) const {
 }
 
 Trie::Trie(){
-	this->root.next = (node_t *)malloc(sizeof(node_t)*ARR_SIZE);
+	this->root.next = new node_t[ARR_SIZE];
 	this->root.eow  = false;
 }
 
@@ -113,7 +113,7 @@ void Trie::insertWord(const string &word){
 	for (i = 0 ; i < word.length()-1 ; i++){
 		unsigned char pos = charToArrPos(word[i]);
 		if (temp[pos].next == nullptr )
-			temp[pos].next = (node_t*)malloc(sizeof(node_t)*ARR_SIZE);
+			temp[pos].next = new node_t[ARR_SIZE];
 
 		temp = temp[pos].next;
 	}
@@ -213,7 +213,7 @@ bool Trie::exactWordSearch(string &word) const{
 
 
 list<string> *Trie::approximateWordSearch(string &word) const {
-	unsigned int *min_dist = (unsigned int *)malloc(sizeof(unsigned int));
+	unsigned int *min_dist = new unsigned int;
 	*min_dist = this->findInitK(word);
 	//cout << word << " initial K = " << (*min_dist) << endl;
 	list<string> *results = new list<string>;
