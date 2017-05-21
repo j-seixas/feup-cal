@@ -162,7 +162,7 @@ void loadStreets(Graph<T> &graph) {
 					graph.insertWordToTrie(triename);
 					if (isTwoWays) {
 						Edge<T>* oppositeEdge = new Edge<T>(vertex, (-1 * ed->getID()), calculateDistance(vertex, ed->getDest()));
-						oppositeEdge->setName(triname+"B");
+						oppositeEdge->setName(streetName + to_string(i)+"B");
 						ed->getDest()->addEdge(oppositeEdge);
 						triename += "B";
 						graph.insertNameToEdge(triename, oppositeEdge);
