@@ -112,10 +112,8 @@ void Trie::insertWord(const string &word){
 	node_t *temp = this->root.next;
 	for (i = 0 ; i < word.length()-1 ; i++){
 		unsigned char pos = charToArrPos(word[i]);
-		if (temp[pos].next == nullptr ){
+		if (temp[pos].next == nullptr )
 			temp[pos].next = new node_t[ARR_SIZE];
-			temp[pos].eow = false;
-		}
 
 		temp = temp[pos].next;
 	}

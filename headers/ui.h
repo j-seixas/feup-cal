@@ -50,7 +50,6 @@ bool menu(Graph<T> &graph, GraphViewer *gv){
 			string streetName = getStreetName();
 			transform(streetName.begin(), streetName.end(), streetName.begin(), ::toupper);
 			if(graph.exactWordSearch(streetName)){
-				transform(streetName.begin(), streetName.end(), streetName.begin(), ::toupper);
 				Vertex<T> * v = graph.cutStreet(streetName,n_nodes);
 				if ( v != NULL){
 					graph.updateGraphViewer(gv);
