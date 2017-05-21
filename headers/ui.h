@@ -51,7 +51,7 @@ bool menu(Graph<T> &graph, GraphViewer *gv){
 			transform(streetName.begin(), streetName.end(), streetName.begin(), ::toupper);
 			if(graph.exactWordSearch(streetName)){
 				Vertex<T> * v = graph.cutStreet(streetName,n_nodes);
-				if ( v != NULL){
+				if ( v != nullptr){
 					graph.updateGraphViewer(gv);
 					carsMovingMenu(graph,v,gv,n_nodes);
 				}

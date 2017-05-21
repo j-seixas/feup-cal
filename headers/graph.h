@@ -224,13 +224,14 @@ template<class T>
 Vertex<T> * Graph<T>::cutStreet(string &streetName, unsigned long int &n_nodes) {
 	auto it = this->nameToEdge.find(streetName);
 	if ( it != this->nameToEdge.end() ) { //Edge found
+		cout << "Cutting edge |" << streetName << "|\n";
 		this->resetAlgorithmVars();
 		this->generateCarPaths(it->second->dest, n_nodes);
 		it->second->cutRoad();
 		return it->second->sourc;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 /**
