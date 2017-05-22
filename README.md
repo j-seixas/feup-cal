@@ -1,4 +1,5 @@
 # feup-cal
 
-Assuming the same folder structure compile with
-g++ -std=c++11 -O3 -o proj src/*.cpp graph_viewer/*.cpp -I graph_viewer/ -I headers/ -Wall -Wextra
+We are aware that the program does not work as it should in Windows, so it needs to be compiled and run in a Linux environment.
+
+To compile program simply run the makefile.
