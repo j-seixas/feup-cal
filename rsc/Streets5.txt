@@ -28,15 +28,15 @@
 184157120;Avenida Rotunda;True
 184157121;Rua Milagre;True
 184157122;Rua Milagres;True
-184157126;Rua 2 Milagres;True
+184157126;Rua dos Milagres;True
 184157127;Avenida Abril;True
 184158182;Rua Antonio;True
 184158623;Rua Santos;True
 184158629;Rua Santas;True
 184158630;Avenida Principal;True
-185558967;Rua 1;True
-185559183;Rua 2;True
-185559237;Rua 3;True
+185558967;Rua Angola;True
+185559183;Rua Macau;True
+185559237;Rua Brasil;True
 185628453;Avenida Principio;True
 185628465;Rua Escada;True
 229682945;Rua Verdade;True
